@@ -1,8 +1,10 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { useSearchParams } from "react-router-dom"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
-import { Student } from "../../types"
+import { Student, StudentStatus } from "../../types"
 import { appStorage } from "../../services/storage"
+import { api } from "../../services/api"
 import { DataTable, Column } from "../../components/tables/DataTable"
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
@@ -10,12 +12,57 @@ import { Modal } from "../../components/ui/Modal"
 import { Input } from "../../components/ui/Input"
 import { Select } from "../../components/ui/Select"
 import { formatCurrency } from "../../lib/utils"
-import { Plus, UserCheck, Eye, Trash2, Mail, Phone, Calendar, BookOpen, AlertCircle } from "lucide-react"
+import { Plus, UserCheck, Eye, Trash2, Mail, Phone, Calendar, BookOpen, AlertCircle, RefreshCw, Loader2 } from "lucide-react"
+
+function mapBackendStudent(s: any): Student {
+  const guardian = s.guardian_links?.[0]
+  const genderMap: Record<string, "male" | "female" | "other"> = {
+    M: "male",
+    F: "female",
+    O: "other",
+  }
+  const statusMap: Record<string, StudentStatus> = {
+    admitted: "active",
+    enrolled: "active",
+    applied: "active",
+    suspended: "suspended",
+    graduated: "graduated",
+    withdrawn: "transferred",
+  }
+
+  const fn = s.first_name || ""
+  const ln = s.last_name || ""
+  const fallbackEmail = `${fn.toLowerCase()}.${ln.toLowerCase()}@omni-edu.org`
+
+  return {
+    id: s.id,
+    admissionNumber: s.admission_number || `ADM-${s.id?.slice(0, 5) || "001"}`,
+    firstName: fn,
+    lastName: ln,
+    email: s.user?.email || s.email || fallbackEmail,
+    avatar: s.avatar || s.user?.avatar_url,
+    gender: genderMap[s.gender] || "other",
+    dateOfBirth: s.date_of_birth || "2005-01-01",
+    gradeOrProgram: s.grade_or_program || s.enrollments?.[0]?.class_cohort_name || "B.Sc. Computer Science",
+    sectionOrBatch: s.section_or_batch || s.enrollments?.[0]?.section_name || "Cohort A - Year 1",
+    enrollmentDate: s.admission_date || new Date().toISOString().split("T")[0],
+    status: statusMap[s.status] || "active",
+    guardianName: guardian?.guardian_name || "Legal Guardian",
+    guardianRelationship: guardian?.relationship || "Guardian",
+    guardianContact: guardian?.phone_number || "+1 (555) 000-0000",
+    outstandingBalance: s.outstanding_balance ?? 0,
+    attendanceRate: s.attendance_rate ?? 95,
+    gpa: s.gpa ?? 3.8,
+  }
+}
 
 export const StudentsPage: React.FC = () => {
   const { tenant, t } = useTenant()
   const { can } = useAuth()
+  const [searchParams] = useSearchParams()
   const [students, setStudents] = useState<Student[]>(() => appStorage.getStudents())
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   // Modals state
   const [isAdmitModalOpen, setIsAdmitModalOpen] = useState(false)
@@ -25,6 +72,7 @@ export const StudentsPage: React.FC = () => {
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
+  const [dob, setDob] = useState("2005-01-01")
   const [gender, setGender] = useState<"male" | "female" | "other">("female")
   const [gradeOrProgram, setGradeOrProgram] = useState("B.Sc. Computer Science")
   const [sectionOrBatch, setSectionOrBatch] = useState("Cohort A - Year 1")
@@ -32,58 +80,116 @@ export const StudentsPage: React.FC = () => {
   const [guardianContact, setGuardianContact] = useState("")
   const [formError, setFormError] = useState("")
 
-  const refreshData = () => {
-    setStudents([...appStorage.getStudents()])
+  const fetchStudents = async () => {
+    setIsLoading(true)
+    try {
+      const data = await api.students.list()
+      if (Array.isArray(data) && data.length > 0) {
+        const mapped = data.map(mapBackendStudent)
+        setStudents(mapped)
+      } else {
+        setStudents(appStorage.getStudents())
+      }
+    } catch (err) {
+      console.warn("Could not fetch students from API, using fallback:", err)
+      setStudents(appStorage.getStudents())
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleAdmitSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchStudents()
+  }, [tenant.id])
+
+  useEffect(() => {
+    if (searchParams.get("admit") === "true") {
+      setIsAdmitModalOpen(true)
+    }
+  }, [searchParams])
+
+  const handleAdmitSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!firstName || !lastName || !email) {
-      setFormError("Please fill out all required fields.")
+    if (!firstName.trim() || !lastName.trim()) {
+      setFormError("Please fill out first and last name.")
       return
     }
 
-    // Check duplicate email
-    if (students.some(s => s.email.toLowerCase() === email.toLowerCase())) {
-      setFormError(`A ${t("learner")} with email ${email} already exists.`)
-      return
-    }
-
-    const admNum = `ADM-${new Date().getFullYear()}-${String(students.length + 1).padStart(3, "0")}`
-    appStorage.addStudent({
-      admissionNumber: admNum,
-      firstName,
-      lastName,
-      email,
-      gender,
-      dateOfBirth: "2005-01-01",
-      gradeOrProgram,
-      sectionOrBatch,
-      enrollmentDate: new Date().toISOString().split("T")[0],
-      status: "active",
-      guardianName: guardianName || "Legal Guardian",
-      guardianRelationship: "Parent",
-      guardianContact: guardianContact || "+1 (555) 000-0000",
-      outstandingBalance: 0,
-      attendanceRate: 100,
-      gpa: 4.0
-    })
-
-    refreshData()
-    setIsAdmitModalOpen(false)
-    // Reset form
-    setFirstName("")
-    setLastName("")
-    setEmail("")
-    setGuardianName("")
-    setGuardianContact("")
     setFormError("")
+    setIsSubmitting(true)
+
+    try {
+      const gFirst = guardianName.trim() ? guardianName.trim().split(" ")[0] : "Legal"
+      const gLast = guardianName.trim() && guardianName.trim().split(" ").length > 1 
+        ? guardianName.trim().split(" ").slice(1).join(" ") 
+        : "Guardian"
+
+      const payload = {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: email.trim() || undefined,
+        class_name: gradeOrProgram,
+        section_name: sectionOrBatch,
+        date_of_birth: dob || "2005-01-01",
+        gender: gender === "female" ? "F" : gender === "male" ? "M" : "O",
+        admission_date: new Date().toISOString().split("T")[0],
+        guardian: {
+          first_name: gFirst,
+          last_name: gLast,
+          phone_number: guardianContact.trim() || "+1 (555) 000-0000",
+          relationship: "legal_guardian",
+        }
+      }
+
+      await api.students.admit(payload)
+
+      // Sync local storage for resilience
+      const admNum = `ADM-${new Date().getFullYear()}-${String(students.length + 1).padStart(3, "0")}`
+      appStorage.addStudent({
+        admissionNumber: admNum,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim() || `${firstName.toLowerCase()}.${lastName.toLowerCase()}@omni-edu.org`,
+        gender,
+        dateOfBirth: dob || "2005-01-01",
+        gradeOrProgram,
+        sectionOrBatch,
+        enrollmentDate: new Date().toISOString().split("T")[0],
+        status: "active",
+        guardianName: guardianName || "Legal Guardian",
+        guardianRelationship: "Parent",
+        guardianContact: guardianContact || "+1 (555) 000-0000",
+        outstandingBalance: 0,
+        attendanceRate: 100,
+        gpa: 4.0
+      })
+
+      await fetchStudents()
+      setIsAdmitModalOpen(false)
+      // Reset form
+      setFirstName("")
+      setLastName("")
+      setEmail("")
+      setGuardianName("")
+      setGuardianContact("")
+      setFormError("")
+    } catch (err: any) {
+      console.error("Admit student error:", err)
+      setFormError(err.message || "Failed to admit student. Please verify server connection.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm(`Are you sure you want to remove this ${t("learner")} record?`)) {
+      try {
+        await api.students.delete(id)
+      } catch (err) {
+        console.warn("Backend student delete failed:", err)
+      }
       appStorage.deleteStudent(id)
-      refreshData()
+      await fetchStudents()
       if (selectedStudent?.id === id) setSelectedStudent(null)
     }
   }
@@ -264,7 +370,7 @@ export const StudentsPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input
               label="Institutional Email *"
               type="email"
@@ -272,6 +378,13 @@ export const StudentsPage: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="liam.vance@student.edu"
+            />
+            <Input
+              label="Date of Birth *"
+              type="date"
+              required
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
             />
             <Select
               label="Gender"
@@ -324,12 +437,17 @@ export const StudentsPage: React.FC = () => {
             <Button
               type="button"
               variant="outline"
+              disabled={isSubmitting}
               onClick={() => setIsAdmitModalOpen(false)}
             >
               Cancel
             </Button>
-            <Button type="submit">
-              Complete Admission
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              leftIcon={isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : undefined}
+            >
+              {isSubmitting ? "Submitting Admission..." : "Complete Admission"}
             </Button>
           </div>
         </form>

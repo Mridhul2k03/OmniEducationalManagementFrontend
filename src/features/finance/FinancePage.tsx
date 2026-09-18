@@ -1,8 +1,9 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
 import { Invoice } from "../../types"
 import { appStorage } from "../../services/storage"
+import { api } from "../../services/api"
 import { DataTable, Column } from "../../components/tables/DataTable"
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
@@ -10,19 +11,66 @@ import { Modal } from "../../components/ui/Modal"
 import { Input } from "../../components/ui/Input"
 import { StatsCard } from "../../components/ui/StatsCard"
 import { formatCurrency } from "../../lib/utils"
-import { Wallet, CreditCard, DollarSign, CheckCircle2, AlertCircle, FileText, ArrowUpRight } from "lucide-react"
+import { Wallet, CreditCard, DollarSign, CheckCircle2, AlertCircle, FileText, ArrowUpRight, Loader2 } from "lucide-react"
+
+function mapBackendInvoice(inv: any): Invoice {
+  const lineDesc = inv.lines?.[0]?.description || "Tuition & Academic Fees"
+  const cat = lineDesc.toLowerCase().includes("lab") 
+    ? "Lab Fee" 
+    : lineDesc.toLowerCase().includes("library") 
+    ? "Library" 
+    : lineDesc.toLowerCase().includes("exam") 
+    ? "Examination" 
+    : lineDesc.toLowerCase().includes("transport") 
+    ? "Transport" 
+    : "Tuition"
+
+  return {
+    id: inv.id,
+    invoiceNumber: inv.invoice_number,
+    studentId: inv.student || "",
+    studentName: inv.student_name || "Student",
+    admissionNumber: inv.admission_number || "ADM-001",
+    title: lineDesc,
+    amount: Number(inv.total_amount || 0),
+    dueDate: inv.due_date,
+    status: inv.status,
+    paidAmount: Number(inv.paid_amount || 0),
+    issueDate: inv.created_at ? inv.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+    category: cat as any,
+  }
+}
 
 export const FinancePage: React.FC = () => {
   const { tenant, t } = useTenant()
   const { can } = useAuth()
   const [invoices, setInvoices] = useState<Invoice[]>(() => appStorage.getInvoices())
+  const [isLoading, setIsLoading] = useState(false)
+  const [isPaying, setIsPaying] = useState(false)
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
   const [paymentAmount, setPaymentAmount] = useState<number>(0)
   const [isPayModalOpen, setIsPayModalOpen] = useState(false)
 
-  const refreshData = () => {
-    setInvoices([...appStorage.getInvoices()])
+  const fetchInvoices = async () => {
+    setIsLoading(true)
+    try {
+      const data = await api.finance.getInvoices()
+      if (Array.isArray(data) && data.length > 0) {
+        setInvoices(data.map(mapBackendInvoice))
+      } else {
+        setInvoices(appStorage.getInvoices())
+      }
+    } catch (err) {
+      console.warn("Could not fetch invoices from API, using fallback:", err)
+      setInvoices(appStorage.getInvoices())
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  useEffect(() => {
+    fetchInvoices()
+  }, [tenant.id])
 
   const handleOpenPayment = (inv: Invoice) => {
     setSelectedInvoice(inv)
@@ -30,12 +78,24 @@ export const FinancePage: React.FC = () => {
     setIsPayModalOpen(true)
   }
 
-  const handleRecordPayment = (e: React.FormEvent) => {
+  const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedInvoice || paymentAmount <= 0) return
 
+    setIsPaying(true)
+    try {
+      await api.finance.recordPayment({
+        invoice_id: selectedInvoice.id,
+        amount: paymentAmount,
+        payment_method: "card",
+      })
+    } catch (err) {
+      console.warn("Backend payment recording failed, updating local state:", err)
+    }
+
     appStorage.recordPayment(selectedInvoice.id, paymentAmount)
-    refreshData()
+    await fetchInvoices()
+    setIsPaying(false)
     setIsPayModalOpen(false)
     setSelectedInvoice(null)
   }

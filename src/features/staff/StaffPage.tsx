@@ -1,19 +1,44 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
 import { Staff } from "../../types"
 import { appStorage } from "../../services/storage"
+import { api } from "../../services/api"
 import { DataTable, Column } from "../../components/tables/DataTable"
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
 import { Modal } from "../../components/ui/Modal"
 import { Input } from "../../components/ui/Input"
-import { Plus, GraduationCap, Mail, Phone, Calendar, Clock, BookOpen } from "lucide-react"
+import { Plus, GraduationCap, Mail, Phone, Calendar, Clock, BookOpen, Loader2 } from "lucide-react"
+
+function mapBackendStaff(s: any): Staff {
+  const parts = (s.full_name || "").trim().split(" ")
+  const fn = parts[0] || "Staff"
+  const ln = parts.slice(1).join(" ") || "Member"
+
+  return {
+    id: s.id,
+    staffNumber: s.employee_id || `FAC-${s.id?.slice(0, 4) || "101"}`,
+    firstName: fn,
+    lastName: ln,
+    email: s.email || `${fn.toLowerCase()}.${ln.toLowerCase()}@omni-edu.org`,
+    avatar: s.avatar_url,
+    roleTitle: s.designation || "Faculty",
+    department: s.department_name || "Academic Faculty",
+    designation: s.designation || "Lecturer",
+    joiningDate: s.joined_date || new Date().toISOString().split("T")[0],
+    status: s.status === "active" ? "active" : "on_leave",
+    subjects: ["Core Curriculum"],
+    phone: s.phone_number || "+1 (555) 000-0000",
+    weeklyHours: 16,
+  }
+}
 
 export const StaffPage: React.FC = () => {
-  const { t } = useTenant()
+  const { tenant, t } = useTenant()
   const { can } = useAuth()
   const [staff, setStaff] = useState<Staff[]>(() => appStorage.getStaff())
+  const [isLoading, setIsLoading] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null)
 
@@ -26,11 +51,28 @@ export const StaffPage: React.FC = () => {
   const [phone, setPhone] = useState("")
   const [weeklyHours, setWeeklyHours] = useState(16)
 
-  const refreshData = () => {
-    setStaff([...appStorage.getStaff()])
+  const fetchStaff = async () => {
+    setIsLoading(true)
+    try {
+      const data = await api.staff.list()
+      if (Array.isArray(data) && data.length > 0) {
+        setStaff(data.map(mapBackendStaff))
+      } else {
+        setStaff(appStorage.getStaff())
+      }
+    } catch (err) {
+      console.warn("Could not fetch staff from API, using fallback:", err)
+      setStaff(appStorage.getStaff())
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchStaff()
+  }, [tenant.id])
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const staffNumber = `FAC-${100 + staff.length + 1}`
     appStorage.addStaff({
@@ -48,7 +90,7 @@ export const StaffPage: React.FC = () => {
       weeklyHours: Number(weeklyHours) || 16
     })
 
-    refreshData()
+    await fetchStaff()
     setIsAddModalOpen(false)
     setFirstName("")
     setLastName("")

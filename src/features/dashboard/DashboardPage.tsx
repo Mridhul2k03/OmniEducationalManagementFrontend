@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { 
   Users, 
@@ -21,6 +21,7 @@ import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
 import { formatCurrency } from "../../lib/utils"
 import { appStorage } from "../../services/storage"
+import { api } from "../../services/api"
 import {
   AreaChart,
   Area,
@@ -57,17 +58,53 @@ export const DashboardPage: React.FC = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  const students = appStorage.getStudents()
-  const staff = appStorage.getStaff()
-  const invoices = appStorage.getInvoices()
-  const announcements = appStorage.getAnnouncements().slice(0, 3)
+  const [studentsCount, setStudentsCount] = useState<number>(() => appStorage.getStudents().length)
+  const [staffCount, setStaffCount] = useState<number>(() => appStorage.getStaff().length)
+  const [invoices, setInvoices] = useState<any[]>(() => appStorage.getInvoices())
+  const [announcements, setAnnouncements] = useState<any[]>(() => appStorage.getAnnouncements().slice(0, 3))
   const timetable = appStorage.getTimetable().slice(0, 4)
 
-  const totalOutstanding = invoices
-    .filter(i => i.status !== "paid")
-    .reduce((sum, i) => sum + (i.amount - i.paidAmount), 0)
+  useEffect(() => {
+    api.students.list().then(res => {
+      if (Array.isArray(res) && res.length > 0) setStudentsCount(res.length)
+    }).catch(() => {})
 
-  const totalCollected = invoices.reduce((sum, i) => sum + i.paidAmount, 0)
+    api.staff.list().then(res => {
+      if (Array.isArray(res) && res.length > 0) setStaffCount(res.length)
+    }).catch(() => {})
+
+    api.finance.getInvoices().then(res => {
+      if (Array.isArray(res) && res.length > 0) setInvoices(res)
+    }).catch(() => {})
+
+    api.communications.getAnnouncements().then(res => {
+      if (Array.isArray(res) && res.length > 0) {
+        setAnnouncements(res.slice(0, 3).map((a: any) => ({
+          id: a.id,
+          title: a.title,
+          content: a.content,
+          author: a.author_name || "Administration",
+          authorRole: "Admin",
+          date: a.published_at ? a.published_at.split("T")[0] : "Recent",
+          priority: "normal",
+          audience: a.target_audience || "all",
+          category: "Academic",
+        })))
+      }
+    }).catch(() => {})
+  }, [tenant.id])
+
+  const totalOutstanding = invoices
+    .filter((i: any) => i.status !== "paid")
+    .reduce((sum: number, i: any) => {
+      const amt = Number(i.total_amount ?? i.amount ?? 0)
+      const paid = Number(i.paid_amount ?? i.paidAmount ?? 0)
+      return sum + (amt - paid)
+    }, 0)
+
+  const totalCollected = invoices.reduce((sum: number, i: any) => {
+    return sum + Number(i.paid_amount ?? i.paidAmount ?? 0)
+  }, 0)
 
   return (
     <div className="space-y-6">
@@ -95,7 +132,7 @@ export const DashboardPage: React.FC = () => {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => navigate("/app/students")}
+              onClick={() => navigate("/app/students?admit=true")}
               leftIcon={<Plus className="w-3.5 h-3.5" />}
             >
               Admit {t("learner")}
@@ -126,7 +163,7 @@ export const DashboardPage: React.FC = () => {
         />
         <StatsCard
           title={`Active ${t("educators")}`}
-          value={staff.length}
+          value={staffCount}
           description="100% faculty allocated"
           icon={<GraduationCap className="w-5 h-5" />}
           colorVariant="emerald"

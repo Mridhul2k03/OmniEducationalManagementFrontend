@@ -1,8 +1,9 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
 import { Exam, MarkRecord } from "../../types"
 import { appStorage } from "../../services/storage"
+import { api } from "../../services/api"
 import { DataTable, Column } from "../../components/tables/DataTable"
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
@@ -10,22 +11,50 @@ import { Modal } from "../../components/ui/Modal"
 import { Input } from "../../components/ui/Input"
 import { FileSpreadsheet, Eye, Printer, Award, CheckCircle2, FileText } from "lucide-react"
 
+function mapBackendMark(m: any): MarkRecord {
+  return {
+    id: m.id,
+    examId: m.exam_subject || "exam-1",
+    studentId: m.student || "",
+    studentName: m.student_name || "Student",
+    admissionNumber: m.admission_number || "ADM-001",
+    marksObtained: Number(m.marks_obtained || 0),
+    maxMarks: Number(m.max_marks || 100),
+    grade: m.grade || "A",
+    gpa: Number(m.grade_point || 4.0),
+    status: m.status === "entered" ? "submitted" : m.status || "submitted",
+  }
+}
+
 export const ExaminationsPage: React.FC = () => {
   const { tenant, t } = useTenant()
   const { can } = useAuth()
-  const [exams] = useState<Exam[]>(() => appStorage.getExams())
+  const [exams, setExams] = useState<Exam[]>(() => appStorage.getExams())
   const [selectedExam, setSelectedExam] = useState<Exam>(exams[0])
   const [marks, setMarks] = useState<MarkRecord[]>(() => appStorage.getMarks(exams[0].id))
   const [selectedReportCard, setSelectedReportCard] = useState<MarkRecord | null>(null)
+
+  useEffect(() => {
+    api.examinations.getMarks().then((res) => {
+      if (Array.isArray(res) && res.length > 0) {
+        setMarks(res.map(mapBackendMark))
+      }
+    }).catch(() => {})
+  }, [tenant.id])
 
   const handleExamSelect = (exam: Exam) => {
     setSelectedExam(exam)
     setMarks(appStorage.getMarks(exam.id))
   }
 
-  const handleScoreChange = (markId: string, newScore: number) => {
+  const handleScoreChange = async (markId: string, newScore: number) => {
+    try {
+      await api.examinations.updateMark(markId, newScore)
+    } catch (err) {
+      console.warn("Backend mark update error, fallback local:", err)
+    }
     appStorage.updateMark(markId, newScore)
-    setMarks([...appStorage.getMarks(selectedExam.id)])
+    setMarks(prev => prev.map(m => m.id === markId ? { ...m, marksObtained: newScore } : m))
   }
 
   const columns: Column<MarkRecord>[] = [

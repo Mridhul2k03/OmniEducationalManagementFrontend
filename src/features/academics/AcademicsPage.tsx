@@ -1,18 +1,44 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
 import { CourseClass } from "../../types"
 import { appStorage } from "../../services/storage"
+import { api } from "../../services/api"
 import { DataTable, Column } from "../../components/tables/DataTable"
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card"
 import { BookOpen, Layers, Users, Clock, Plus, CheckCircle2 } from "lucide-react"
 
+function mapBackendClass(cls: any, idx: number): CourseClass {
+  const sec = cls.sections?.[0]
+  return {
+    id: cls.id,
+    code: `CS-${300 + idx}`,
+    name: cls.name,
+    term: cls.academic_year_name || "Fall 2026",
+    instructorId: "fac-1",
+    instructorName: "Dr. Arthur Pendelton",
+    room: sec?.room_number || "Hall 402",
+    schedule: "Mon/Wed 10:00 - 11:30 AM",
+    enrolledCount: 38,
+    capacity: sec?.capacity || 40,
+    credits: 4,
+  }
+}
+
 export const AcademicsPage: React.FC = () => {
   const { tenant, t } = useTenant()
   const { can } = useAuth()
-  const [courses] = useState<CourseClass[]>(() => appStorage.getCourses())
+  const [courses, setCourses] = useState<CourseClass[]>(() => appStorage.getCourses())
+
+  useEffect(() => {
+    api.academics.getClasses().then((res) => {
+      if (Array.isArray(res) && res.length > 0) {
+        setCourses(res.map(mapBackendClass))
+      }
+    }).catch(() => {})
+  }, [tenant.id])
 
   const academicSummary = [
     { title: `Active ${t("terms")}`, count: "Fall 2026", sub: "Aug 2026 - Dec 2026", icon: Clock },

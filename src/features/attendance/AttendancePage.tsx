@@ -1,21 +1,58 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { AttendanceRecord, AttendanceStatus } from "../../types"
 import { appStorage } from "../../services/storage"
+import { api } from "../../services/api"
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
 import { Select } from "../../components/ui/Select"
 import { Input } from "../../components/ui/Input"
-import { CheckCircle2, XCircle, Clock, AlertCircle, Save, Check } from "lucide-react"
+import { CheckCircle2, XCircle, Clock, AlertCircle, Save, Check, Loader2 } from "lucide-react"
+
+function mapBackendAttendance(r: any): AttendanceRecord {
+  return {
+    id: r.id,
+    studentId: r.student || "",
+    studentName: r.student_name || "Student",
+    admissionNumber: r.admission_number || "ADM-001",
+    classId: r.section || "CS-304",
+    date: r.date,
+    status: (r.status as AttendanceStatus) || "present",
+    notes: r.remarks || "",
+  }
+}
 
 export const AttendancePage: React.FC = () => {
-  const { t } = useTenant()
+  const { tenant, t } = useTenant()
   const [selectedClass, setSelectedClass] = useState("CS-304")
   const [selectedDate, setSelectedDate] = useState("2026-09-17")
   const [records, setRecords] = useState<AttendanceRecord[]>(() => 
     appStorage.getAttendance("CS-304", "2026-09-17")
   )
   const [isSaved, setIsSaved] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+
+  const fetchAttendance = async () => {
+    setIsLoading(true)
+    try {
+      const data = await api.attendance.getRecords({ date: selectedDate })
+      if (Array.isArray(data) && data.length > 0) {
+        setRecords(data.map(mapBackendAttendance))
+      } else {
+        setRecords(appStorage.getAttendance(selectedClass, selectedDate))
+      }
+    } catch (err) {
+      console.warn("Could not fetch attendance from API, using fallback:", err)
+      setRecords(appStorage.getAttendance(selectedClass, selectedDate))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAttendance()
+  }, [tenant.id, selectedDate])
 
   const handleStatusChange = (recordId: string, status: AttendanceStatus) => {
     setRecords(prev => prev.map(r => r.id === recordId ? { ...r, status } : r))
@@ -27,10 +64,17 @@ export const AttendancePage: React.FC = () => {
     setIsSaved(false)
   }
 
-  const handleSave = () => {
-    appStorage.saveAttendance(records)
-    setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 3000)
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      appStorage.saveAttendance(records)
+      setIsSaved(true)
+      setTimeout(() => setIsSaved(false), 3000)
+    } catch (err) {
+      console.error("Failed to save attendance:", err)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   // Calculated stats

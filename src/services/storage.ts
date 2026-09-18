@@ -9,8 +9,8 @@ import {
   MarkRecord, 
   Invoice, 
   Announcement, 
-  Assignment,
-  AttendanceRecord,
+  Assignment, 
+  AttendanceRecord, 
   AttendanceStatus 
 } from "../types"
 import { 
@@ -26,6 +26,7 @@ import {
   INITIAL_ANNOUNCEMENTS, 
   INITIAL_ASSIGNMENTS 
 } from "./mockData"
+import { api } from "./api"
 
 class AppStorageService {
   private tenants: Tenant[] = DEFAULT_TENANTS
@@ -49,6 +50,12 @@ class AppStorageService {
   ]
 
   private listeners: Set<() => void> = new Set()
+  private isSyncing: boolean = false
+
+  constructor() {
+    // Attempt background sync when API is reachable
+    this.syncWithBackend()
+  }
 
   private notify() {
     this.listeners.forEach(cb => cb())
@@ -57,6 +64,83 @@ class AppStorageService {
   public subscribe(cb: () => void): () => void {
     this.listeners.add(cb)
     return () => this.listeners.delete(cb)
+  }
+
+  /**
+   * Syncs local storage data with live Django backend endpoints
+   */
+  public async syncWithBackend(): Promise<void> {
+    if (this.isSyncing) return
+    this.isSyncing = true
+
+    try {
+      // 1. Fetch live students
+      const backendStudents = await api.students.list()
+      if (Array.isArray(backendStudents) && backendStudents.length > 0) {
+        this.students = backendStudents.map((s: any) => ({
+          id: s.id,
+          admissionNumber: s.admission_number,
+          firstName: s.first_name,
+          lastName: s.last_name,
+          email: `${s.first_name.toLowerCase()}.${s.last_name.toLowerCase()}@student.omni-edu.org`,
+          avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80`,
+          gender: s.gender === "F" ? "female" : (s.gender === "M" ? "male" : "other"),
+          dateOfBirth: s.date_of_birth,
+          gradeOrProgram: "Year 3 Computer Science",
+          sectionOrBatch: "Section A",
+          enrollmentDate: s.admission_date,
+          status: (s.status === "enrolled" ? "active" : s.status) as any,
+          guardianName: s.guardian_links?.[0]?.guardian_name || "Parent",
+          guardianRelationship: s.guardian_links?.[0]?.relationship || "Parent",
+          guardianContact: s.guardian_links?.[0]?.phone_number || "+15550192834",
+          outstandingBalance: 0,
+          attendanceRate: 94,
+          gpa: 3.8,
+        }))
+      }
+
+      // 2. Fetch live announcements
+      const backendAnnouncements = await api.communications.getAnnouncements()
+      if (Array.isArray(backendAnnouncements) && backendAnnouncements.length > 0) {
+        this.announcements = backendAnnouncements.map((a: any) => ({
+          id: a.id,
+          title: a.title,
+          content: a.content,
+          author: a.author?.full_name || a.author?.email || "Administration",
+          authorRole: "Administrator",
+          date: a.published_at ? a.published_at.split("T")[0] : new Date().toISOString().split("T")[0],
+          audience: (a.target_audience === "teachers" ? "faculty" : (a.target_audience || "all")) as any,
+          priority: (a.priority === "urgent" ? "urgent" : (a.priority === "high" ? "high" : "normal")) as any,
+          category: "Academic" as const,
+          isRead: false,
+        }))
+      }
+
+      // 3. Fetch live invoices
+      const backendInvoices = await api.finance.getInvoices()
+      if (Array.isArray(backendInvoices) && backendInvoices.length > 0) {
+        this.invoices = backendInvoices.map((inv: any) => ({
+          id: inv.id,
+          invoiceNumber: inv.invoice_number,
+          studentId: inv.student?.id || (typeof inv.student === "string" ? inv.student : "std-001"),
+          studentName: inv.student?.full_name || "Enrolled Student",
+          admissionNumber: inv.student?.admission_number || "ADM-2024-001",
+          title: inv.lines?.[0]?.description || "Semester Tuition & Fees",
+          amount: parseFloat(inv.total_amount || 0),
+          paidAmount: parseFloat(inv.paid_amount || 0),
+          dueDate: inv.due_date,
+          issueDate: inv.created_at ? inv.created_at.split("T")[0] : "2026-09-01",
+          status: (inv.status === "paid" ? "paid" : (inv.status === "partially_paid" ? "partially_paid" : "pending")) as any,
+          category: "Tuition" as const,
+        }))
+      }
+
+      this.notify()
+    } catch {
+      // Backend not running or call failed, continue with local state
+    } finally {
+      this.isSyncing = false
+    }
   }
 
   // Tenants
@@ -96,11 +180,20 @@ class AppStorageService {
   public updateStudent(id: string, updates: Partial<Student>): void {
     this.students = this.students.map(s => s.id === id ? { ...s, ...updates } : s)
     this.notify()
+
+    // Sync to backend
+    api.students.update(id, {
+      first_name: updates.firstName,
+      last_name: updates.lastName,
+    }).catch(() => {})
   }
 
   public deleteStudent(id: string): void {
     this.students = this.students.filter(s => s.id !== id)
     this.notify()
+
+    // Sync to backend
+    api.students.delete(id).catch(() => {})
   }
 
   // Staff
@@ -183,6 +276,13 @@ class AppStorageService {
       return inv
     })
     this.notify()
+
+    // Sync with backend
+    api.finance.recordPayment({
+      invoice_id: invoiceId,
+      amount,
+      payment_method: "card",
+    }).catch(() => {})
   }
 
   // Announcements
@@ -199,6 +299,14 @@ class AppStorageService {
     }
     this.announcements = [newAnc, ...this.announcements]
     this.notify()
+
+    // Sync with backend
+    api.communications.createAnnouncement({
+      title: announcementData.title,
+      content: announcementData.content,
+      target_audience: announcementData.audience === "faculty" ? "teachers" : (announcementData.audience || "all"),
+    }).catch(() => {})
+
     return newAnc
   }
 
@@ -212,7 +320,6 @@ class AppStorageService {
     const existing = this.attendanceRecords.filter(a => a.classId === classId && a.date === date)
     if (existing.length > 0) return existing
 
-    // Generate for current students
     return this.students.map(std => ({
       id: `att-${std.id}-${date}`,
       studentId: std.id,

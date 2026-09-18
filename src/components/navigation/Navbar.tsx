@@ -10,7 +10,8 @@ import {
   Check, 
   ChevronDown,
   ShieldCheck,
-  ExternalLink
+  ExternalLink,
+  BookOpen
 } from "lucide-react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
@@ -18,6 +19,7 @@ import { useTheme } from "../../app/providers/ThemeProvider"
 import { Button } from "../ui/Button"
 import { Badge } from "../ui/Badge"
 import { Modal } from "../ui/Modal"
+import { BackendStatusBadge } from "../BackendStatusBadge"
 
 interface NavbarProps {
   onOpenMobileMenu: () => void
@@ -63,6 +65,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu, onOpenCommandP
 
         {/* Middle / Right Side Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Live Backend Connection Indicator */}
+          <BackendStatusBadge />
+
+          {/* Interactive API Docs Link */}
+          <a
+            href="http://127.0.0.1:8000/api/v1/docs/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-slate-200/80 bg-slate-50 hover:bg-slate-100 dark:border-slate-700/70 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-[11px] font-medium text-slate-600 dark:text-slate-300 transition-colors shadow-2xs"
+            title="Open Interactive Swagger API Documentation"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
+            <span>API Docs</span>
+            <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+          </a>
+
           {/* Quick Search / Command Palette Button */}
           <button
             onClick={onOpenCommandPalette}

@@ -1,19 +1,37 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
 import { Announcement } from "../../types"
 import { appStorage } from "../../services/storage"
+import { api } from "../../services/api"
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
 import { Modal } from "../../components/ui/Modal"
 import { Input } from "../../components/ui/Input"
 import { Select } from "../../components/ui/Select"
-import { Megaphone, Plus, Bell, Calendar, User, CheckCircle2 } from "lucide-react"
+import { Megaphone, Plus, Bell, Calendar, User, CheckCircle2, Loader2 } from "lucide-react"
+
+function mapBackendAnnouncement(a: any): Announcement {
+  return {
+    id: a.id,
+    title: a.title,
+    content: a.content,
+    author: a.author_name || "Administration",
+    authorRole: "Institutional Admin",
+    date: a.published_at ? a.published_at.split("T")[0] : new Date().toISOString().split("T")[0],
+    priority: "normal",
+    audience: a.target_audience === "teachers" ? "faculty" : a.target_audience === "parents" ? "guardians" : a.target_audience || "all",
+    category: "Academic",
+    isRead: false,
+  }
+}
 
 export const CommunicationsPage: React.FC = () => {
-  const { t } = useTenant()
+  const { tenant, t } = useTenant()
   const { can, user } = useAuth()
   const [announcements, setAnnouncements] = useState<Announcement[]>(() => appStorage.getAnnouncements())
+  const [isLoading, setIsLoading] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false)
 
   // Form state
@@ -23,17 +41,52 @@ export const CommunicationsPage: React.FC = () => {
   const [audience, setAudience] = useState<"all" | "faculty" | "students" | "guardians">("all")
   const [category, setCategory] = useState<"Academic" | "Events" | "Administrative" | "Emergency">("Academic")
 
-  const refreshData = () => {
-    setAnnouncements([...appStorage.getAnnouncements()])
+  const fetchAnnouncements = async () => {
+    setIsLoading(true)
+    try {
+      const data = await api.communications.getAnnouncements()
+      if (Array.isArray(data) && data.length > 0) {
+        setAnnouncements(data.map(mapBackendAnnouncement))
+      } else {
+        setAnnouncements(appStorage.getAnnouncements())
+      }
+    } catch (err) {
+      console.warn("Could not fetch announcements from API, using fallback:", err)
+      setAnnouncements(appStorage.getAnnouncements())
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handlePublish = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchAnnouncements()
+  }, [tenant.id])
+
+  const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title || !content) return
+    if (!title.trim() || !content.trim()) return
+
+    setIsPublishing(true)
+    try {
+      const targetMap: Record<string, string> = {
+        all: "all",
+        faculty: "teachers",
+        students: "students",
+        guardians: "parents",
+      }
+
+      await api.communications.createAnnouncement({
+        title: title.trim(),
+        content: content.trim(),
+        target_audience: targetMap[audience] || "all",
+      })
+    } catch (err) {
+      console.warn("Backend announcement publish error, saving locally:", err)
+    }
 
     appStorage.addAnnouncement({
-      title,
-      content,
+      title: title.trim(),
+      content: content.trim(),
       author: user?.name || "Administration",
       authorRole: user?.role.replace("_", " ") || "Admin",
       priority,
@@ -41,7 +94,8 @@ export const CommunicationsPage: React.FC = () => {
       category
     })
 
-    refreshData()
+    await fetchAnnouncements()
+    setIsPublishing(false)
     setIsPublishModalOpen(false)
     setTitle("")
     setContent("")
