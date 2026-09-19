@@ -7,7 +7,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password?: string) => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
   can: (permission: string) => boolean
   availableRoles: { role: Role; label: string; description: string }[]
   backendConnected: boolean
