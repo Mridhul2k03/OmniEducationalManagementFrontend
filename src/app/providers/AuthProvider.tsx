@@ -1,15 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { User, Role } from "../../types"
-import { DEMO_USERS } from "../../services/mockData"
 import { api } from "../../services/api"
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (email: string, passwordOrRole?: string | Role, role?: Role) => Promise<boolean>
+  login: (email: string, password?: string) => Promise<boolean>
   logout: () => void
-  switchRole: (role: Role) => void
   can: (permission: string) => boolean
   availableRoles: { role: Role; label: string; description: string }[]
   backendConnected: boolean
@@ -25,43 +23,51 @@ const AVAILABLE_ROLES: { role: Role; label: string; description: string }[] = [
 ]
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const savedRole = localStorage.getItem("omni-user-role") as Role || "institute_admin"
-    const matched = DEMO_USERS.find(u => u.role === savedRole)
-    return matched || DEMO_USERS[0]
-  })
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [backendConnected, setBackendConnected] = useState<boolean>(false)
 
-  // On mount, check health and try to restore live session
+  // On mount, verify backend connection and restore session from valid JWT
   useEffect(() => {
     let isMounted = true
 
     const checkAndRestoreSession = async () => {
-      const health = await api.health.check()
-      if (!isMounted) return
-      setBackendConnected(health.isConnected)
+      try {
+        const health = await api.health.check()
+        if (!isMounted) return
+        setBackendConnected(health.isConnected)
 
-      if (health.isConnected && api.getAccessToken()) {
-        try {
-          const meData = await api.auth.me()
-          if (!isMounted) return
-          if (meData?.user) {
-            const roleCode = (meData.memberships?.[0]?.roles?.[0]?.code as Role) || "institute_admin"
-            const liveUser: User = {
-              id: meData.user.id,
-              name: meData.user.full_name || meData.user.email,
-              email: meData.user.email,
-              role: roleCode,
-              tenantId: meData.active_tenant?.id || "oxford-crest",
-              permissions: meData.active_permissions?.length ? meData.active_permissions : ["*"],
+        const token = api.getAccessToken()
+        if (token) {
+          try {
+            const meData = await api.auth.me()
+            if (!isMounted) return
+            if (meData?.user) {
+              const roleCode = meData.user.is_superuser
+                ? "super_admin"
+                : (meData.memberships?.[0]?.roles?.[0]?.code as Role) || "institute_admin"
+
+              const liveUser: User = {
+                id: meData.user.id,
+                name: meData.user.full_name || meData.user.email,
+                email: meData.user.email,
+                role: roleCode,
+                tenantId: meData.active_tenant?.id || "oxford-crest",
+                permissions: meData.active_permissions?.length ? meData.active_permissions : ["*"],
+                is_superuser: !!meData.user.is_superuser,
+                is_staff: !!meData.user.is_staff,
+              }
+              setUser(liveUser)
             }
-            setUser(liveUser)
-            localStorage.setItem("omni-user-role", roleCode)
+          } catch {
+            api.clearAuth()
+            setUser(null)
           }
-        } catch {
-          // Token expired or invalid, keep current local state
         }
+      } catch {
+        // Backend offline
+      } finally {
+        if (isMounted) setIsLoading(false)
       }
     }
 
@@ -69,36 +75,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => { isMounted = false }
   }, [])
 
-  const login = async (email: string, passwordOrRole?: string | Role, maybeRole?: Role): Promise<boolean> => {
+  const login = async (email: string, password: string = "Password123!"): Promise<boolean> => {
     setIsLoading(true)
 
-    let password = "Password123!"
-    let targetRole: Role = "institute_admin"
-
-    if (passwordOrRole && typeof passwordOrRole === "string" && !passwordOrRole.includes("_") && passwordOrRole.length > 5 && maybeRole) {
-      password = passwordOrRole
-      targetRole = maybeRole
-    } else if (passwordOrRole && typeof passwordOrRole === "string") {
-      targetRole = passwordOrRole as Role
-    }
-
     try {
-      // 1. Try real backend authentication
       const loginRes = await api.auth.login(email, password)
       if (loginRes?.access) {
         setBackendConnected(true)
-        // Fetch detailed profile and active permissions
+        
         let perms = ["*"]
+        let targetRole: Role = loginRes.user?.is_superuser ? "super_admin" : "institute_admin"
+        let isSuper = !!loginRes.user?.is_superuser
+        let isStaff = !!loginRes.user?.is_staff
+        let assignedTenantId = loginRes.active_tenant?.id || "oxford-crest"
+        
         try {
           const meData = await api.auth.me()
           if (meData?.active_permissions?.length) {
             perms = meData.active_permissions
           }
-          if (meData?.memberships?.[0]?.roles?.[0]?.code) {
+          if (meData?.user?.is_superuser) {
+            isSuper = true
+            targetRole = "super_admin"
+          }
+          if (meData?.user?.is_staff) {
+            isStaff = true
+          }
+          if (meData?.memberships?.[0]?.roles?.[0]?.code && !isSuper) {
             targetRole = meData.memberships[0].roles[0].code as Role
           }
+          if (meData?.active_tenant?.id) {
+            assignedTenantId = meData.active_tenant.id
+          }
         } catch {
-          // me call fallback
+          // meData fetch fallback
         }
 
         const authenticatedUser: User = {
@@ -106,43 +116,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name: loginRes.user.full_name || loginRes.user.email,
           email: loginRes.user.email,
           role: targetRole,
-          tenantId: loginRes.active_tenant?.id || "oxford-crest",
+          tenantId: assignedTenantId,
           permissions: perms,
+          is_superuser: isSuper,
+          is_staff: isStaff,
         }
 
+        api.setActiveTenantId(assignedTenantId)
         setUser(authenticatedUser)
-        localStorage.setItem("omni-user-role", targetRole)
-        setIsLoading(false)
         return true
       }
-    } catch {
-      // Backend not available or credentials issue, fallback to offline demo mock
+      return false
+    } finally {
+      setIsLoading(false)
     }
-
-    // 2. Fallback to mock persona
-    const matched = DEMO_USERS.find(u => u.role === targetRole) || {
-      ...DEMO_USERS[0],
-      email,
-      name: email.split("@")[0].toUpperCase()
-    }
-    setUser(matched)
-    localStorage.setItem("omni-user-role", matched.role)
-    setIsLoading(false)
-    return true
   }
 
   const logout = () => {
     api.auth.logout()
     setUser(null)
-    localStorage.removeItem("omni-user-role")
-  }
-
-  const switchRole = (newRole: Role) => {
-    const matched = DEMO_USERS.find(u => u.role === newRole)
-    if (matched) {
-      setUser(matched)
-      localStorage.setItem("omni-user-role", newRole)
-    }
   }
 
   const can = (permission: string): boolean => {
@@ -160,7 +152,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         logout,
-        switchRole,
         can,
         availableRoles: AVAILABLE_ROLES,
         backendConnected,

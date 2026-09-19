@@ -59,7 +59,7 @@ export const BackendStatusBadge: React.FC = () => {
       ) : (
         <>
           <WifiOff className="w-3 h-3 text-slate-400" />
-          <span className="hidden sm:inline">Backend:</span> Offline (Mock)
+          <span className="hidden sm:inline">Backend:</span> Disconnected
         </>
       )}
     </button>

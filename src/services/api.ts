@@ -92,7 +92,11 @@ class ApiClient {
   }
 
   public getActiveTenantId(): string | null {
-    return localStorage.getItem(ACTIVE_TENANT_ID_KEY)
+    const val = localStorage.getItem(ACTIVE_TENANT_ID_KEY) || localStorage.getItem("omni-active-tenant")
+    if (val && val !== "undefined" && val !== "null" && val.trim() !== "") {
+      return val.trim()
+    }
+    return null
   }
 
   public setTokens(access: string, refresh?: string): void {
@@ -103,13 +107,17 @@ class ApiClient {
   }
 
   public setActiveTenantId(tenantId: string): void {
-    localStorage.setItem(ACTIVE_TENANT_ID_KEY, tenantId)
+    if (tenantId && tenantId !== "undefined" && tenantId !== "null") {
+      localStorage.setItem(ACTIVE_TENANT_ID_KEY, tenantId)
+      localStorage.setItem("omni-active-tenant", tenantId)
+    }
   }
 
   public clearAuth(): void {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(REFRESH_TOKEN_KEY)
     localStorage.removeItem(ACTIVE_TENANT_ID_KEY)
+    localStorage.removeItem("omni-active-tenant")
   }
 
   /**
@@ -325,6 +333,17 @@ class ApiClient {
         body: JSON.stringify(payload),
       })
     },
+    update: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/staff/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
+    delete: async (id: string): Promise<any> => {
+      return this.request(`/staff/${id}/`, {
+        method: "DELETE",
+      })
+    },
   }
 
   public academics = {
@@ -332,17 +351,106 @@ class ApiClient {
       const res = await this.request<any>("/academics/years/")
       return unwrapList(res)
     },
+    createYear: async (payload: any): Promise<any> => {
+      return this.request("/academics/years/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    updateYear: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/academics/years/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
+    deleteYear: async (id: string): Promise<any> => {
+      return this.request(`/academics/years/${id}/`, {
+        method: "DELETE",
+      })
+    },
+    getCourses: async (): Promise<any[]> => {
+      const res = await this.request<any>("/academics/courses/")
+      return unwrapList(res)
+    },
+    createCourse: async (payload: any): Promise<any> => {
+      return this.request("/academics/courses/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    updateCourse: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/academics/courses/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
+    deleteCourse: async (id: string): Promise<any> => {
+      return this.request(`/academics/courses/${id}/`, {
+        method: "DELETE",
+      })
+    },
     getClasses: async (): Promise<any[]> => {
       const res = await this.request<any>("/academics/classes/")
       return unwrapList(res)
+    },
+    createClass: async (payload: any): Promise<any> => {
+      return this.request("/academics/classes/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    updateClass: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/academics/classes/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
+    deleteClass: async (id: string): Promise<any> => {
+      return this.request(`/academics/classes/${id}/`, {
+        method: "DELETE",
+      })
     },
     getSections: async (): Promise<any[]> => {
       const res = await this.request<any>("/academics/sections/")
       return unwrapList(res)
     },
+    createSection: async (payload: any): Promise<any> => {
+      return this.request("/academics/sections/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    updateSection: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/academics/sections/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
+    deleteSection: async (id: string): Promise<any> => {
+      return this.request(`/academics/sections/${id}/`, {
+        method: "DELETE",
+      })
+    },
     getSubjects: async (): Promise<any[]> => {
       const res = await this.request<any>("/academics/subjects/")
       return unwrapList(res)
+    },
+    createSubject: async (payload: any): Promise<any> => {
+      return this.request("/academics/subjects/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    updateSubject: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/academics/subjects/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
+    deleteSubject: async (id: string): Promise<any> => {
+      return this.request(`/academics/subjects/${id}/`, {
+        method: "DELETE",
+      })
     },
   }
 
@@ -361,6 +469,12 @@ class ApiClient {
         body: JSON.stringify(payload),
       })
     },
+    updateRecord: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/attendance/records/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
     bulkMark: async (payload: { section_id: string; date: string; subject_id?: string; entries: Array<{ student_id: string; status: string; remarks?: string }> }): Promise<any> => {
       return this.request("/attendance/records/bulk-mark/", {
         method: "POST",
@@ -374,6 +488,28 @@ class ApiClient {
       const res = await this.request<any>("/exams/exams/")
       return unwrapList(res)
     },
+    createExam: async (payload: any): Promise<any> => {
+      return this.request("/exams/exams/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    updateExam: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/exams/exams/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
+    publishExam: async (id: string): Promise<any> => {
+      return this.request(`/exams/exams/${id}/publish/`, {
+        method: "POST",
+      })
+    },
+    deleteExam: async (id: string): Promise<any> => {
+      return this.request(`/exams/exams/${id}/`, {
+        method: "DELETE",
+      })
+    },
     getMarks: async (params: { exam_id?: string } = {}): Promise<any[]> => {
       const query = new URLSearchParams()
       if (params.exam_id) query.set("exam", params.exam_id)
@@ -381,10 +517,23 @@ class ApiClient {
       const res = await this.request<any>(`/exams/marks/${qStr}`)
       return unwrapList(res)
     },
-    updateMark: async (id: string, marksObtained: number): Promise<any> => {
+    createMark: async (payload: any): Promise<any> => {
+      return this.request("/exams/marks/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    updateMark: async (id: string, marksObtained: number, feedback?: string): Promise<any> => {
+      const body: any = { marks_obtained: marksObtained }
+      if (feedback !== undefined) body.feedback = feedback
       return this.request(`/exams/marks/${id}/`, {
         method: "PATCH",
-        body: JSON.stringify({ marks_obtained: marksObtained }),
+        body: JSON.stringify(body),
+      })
+    },
+    deleteMark: async (id: string): Promise<any> => {
+      return this.request(`/exams/marks/${id}/`, {
+        method: "DELETE",
       })
     },
   }
@@ -396,6 +545,23 @@ class ApiClient {
       const qStr = query.toString() ? `?${query.toString()}` : ""
       const res = await this.request<any>(`/finance/invoices/${qStr}`)
       return unwrapList(res)
+    },
+    createInvoice: async (payload: any): Promise<any> => {
+      return this.request("/finance/invoices/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    updateInvoice: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/finance/invoices/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
+    deleteInvoice: async (id: string): Promise<any> => {
+      return this.request(`/finance/invoices/${id}/`, {
+        method: "DELETE",
+      })
     },
     recordPayment: async (payload: { invoice_id: string; amount: number; payment_method?: string }): Promise<any> => {
       return this.request("/finance/payments/record/", {
@@ -419,6 +585,114 @@ class ApiClient {
         method: "POST",
         body: JSON.stringify(payload),
       })
+    },
+    deleteAnnouncement: async (id: string): Promise<any> => {
+      return this.request(`/communications/announcements/${id}/`, {
+        method: "DELETE",
+      })
+    },
+  }
+
+  public audit = {
+    list: async (params: { action?: string; resource_type?: string; search?: string } = {}): Promise<any[]> => {
+      const query = new URLSearchParams()
+      if (params.action) query.set("action", params.action)
+      if (params.resource_type) query.set("resource_type", params.resource_type)
+      if (params.search) query.set("search", params.search)
+      const qStr = query.toString() ? `?${query.toString()}` : ""
+      const res = await this.request<any>(`/audit/${qStr}`)
+      return unwrapList(res)
+    },
+  }
+
+  public platformAdmin = {
+    getStats: async (): Promise<any> => {
+      const res = await this.request<any>("/platform-admin/stats/")
+      return res.data || res
+    },
+    getUsers: async (params: { search?: string; is_active?: boolean; is_staff?: boolean; tenant_id?: string; role?: string } = {}): Promise<any[]> => {
+      const query = new URLSearchParams()
+      if (params.search) query.set("search", params.search)
+      if (params.is_active !== undefined) query.set("is_active", String(params.is_active))
+      if (params.is_staff !== undefined) query.set("is_staff", String(params.is_staff))
+      if (params.tenant_id) query.set("tenant_id", params.tenant_id)
+      if (params.role) query.set("role", params.role)
+      const qStr = query.toString() ? `?${query.toString()}` : ""
+      const res = await this.request<any>(`/platform-admin/users/${qStr}`)
+      return unwrapList(res)
+    },
+    createUser: async (payload: any): Promise<any> => {
+      return this.request("/platform-admin/users/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    updateUser: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/platform-admin/users/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
+    resetUserPassword: async (id: string, newPassword: string): Promise<any> => {
+      return this.request(`/platform-admin/users/${id}/reset-password/`, {
+        method: "POST",
+        body: JSON.stringify({ new_password: newPassword }),
+      })
+    },
+    toggleUserStatus: async (id: string): Promise<any> => {
+      return this.request(`/platform-admin/users/${id}/toggle-status/`, {
+        method: "POST",
+      })
+    },
+    assignUserTenant: async (id: string, payload: { tenant_id: string; role_code?: string; is_default?: boolean }): Promise<any> => {
+      return this.request(`/platform-admin/users/${id}/assign-tenant/`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    deleteUser: async (id: string): Promise<any> => {
+      return this.request(`/platform-admin/users/${id}/`, {
+        method: "DELETE",
+      })
+    },
+    getTenants: async (params: { search?: string; status?: string } = {}): Promise<any[]> => {
+      const query = new URLSearchParams()
+      if (params.search) query.set("search", params.search)
+      if (params.status) query.set("status", params.status)
+      const qStr = query.toString() ? `?${query.toString()}` : ""
+      const res = await this.request<any>(`/platform-admin/tenants/${qStr}`)
+      return unwrapList(res)
+    },
+    createTenant: async (payload: any): Promise<any> => {
+      return this.request("/platform-admin/tenants/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      })
+    },
+    updateTenant: async (id: string, payload: any): Promise<any> => {
+      return this.request(`/platform-admin/tenants/${id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+    },
+    toggleTenantStatus: async (id: string): Promise<any> => {
+      return this.request(`/platform-admin/tenants/${id}/toggle-status/`, {
+        method: "POST",
+      })
+    },
+    deleteTenant: async (id: string): Promise<any> => {
+      return this.request(`/platform-admin/tenants/${id}/`, {
+        method: "DELETE",
+      })
+    },
+    getAuditLogs: async (params: { tenant_id?: string; action?: string; search?: string } = {}): Promise<any[]> => {
+      const query = new URLSearchParams()
+      if (params.tenant_id) query.set("tenant_id", params.tenant_id)
+      if (params.action) query.set("action", params.action)
+      if (params.search) query.set("search", params.search)
+      const qStr = query.toString() ? `?${query.toString()}` : ""
+      const res = await this.request<any>(`/platform-admin/audit-logs/${qStr}`)
+      return unwrapList(res)
     },
   }
 }

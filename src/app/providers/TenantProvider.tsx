@@ -22,6 +22,7 @@ interface TenantContextType {
   t: (key: TermKey) => string
   updateTenant: (tenant: Tenant) => void
   isFeatureEnabled: (feature: keyof Tenant["features"]) => boolean
+  refreshTenants: () => Promise<void>
 }
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined)
@@ -29,7 +30,7 @@ const TenantContext = createContext<TenantContextType | undefined>(undefined)
 export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tenants, setTenants] = useState<Tenant[]>(() => appStorage.getTenants())
   const [activeTenantId, setActiveTenantId] = useState<string>(() => {
-    return localStorage.getItem("omni-active-tenant") || "oxford-crest"
+    return localStorage.getItem("omni-active-tenant-id") || localStorage.getItem("omni-active-tenant") || "7d18388a-872b-4d2b-b42a-f658c03e9e60"
   })
 
   // Sync with appStorage subscription
@@ -39,93 +40,51 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     })
   }, [])
 
+  const fetchBackendTenants = async () => {
+    try {
+      const backendTenants = await api.tenants.list()
+      if (Array.isArray(backendTenants) && backendTenants.length > 0) {
+        appStorage.updateTenantsFromBackend(backendTenants)
+        const updated = appStorage.getTenants()
+        setTenants([...updated])
+      }
+    } catch {
+      // Backend not reachable, keep using offline tenants
+    }
+  }
+
   // Sync with backend tenants
   useEffect(() => {
-    let isMounted = true
-    const fetchBackendTenants = async () => {
-      try {
-        const backendTenants = await api.tenants.list()
-        if (!isMounted || !Array.isArray(backendTenants) || backendTenants.length === 0) return
-
-        const currentLocal = appStorage.getTenants()
-        const merged: Tenant[] = currentLocal.map(loc => {
-          const matched = backendTenants.find(bt => bt.slug === loc.id || bt.id === loc.id)
-          if (matched) {
-            return {
-              ...loc,
-              // Map backend id to ensure UUID is accessible
-              id: matched.id || loc.id,
-              name: matched.name || loc.name,
-            }
-          }
-          return loc
-        })
-
-        // Also add any backend tenants not present locally
-        backendTenants.forEach(bt => {
-          if (!merged.some(m => m.id === bt.id || m.id === bt.slug)) {
-            merged.push({
-              id: bt.id,
-              name: bt.name,
-              code: bt.slug.substring(0, 4).toUpperCase(),
-              type: "university_college",
-              tagline: "Educational Excellence",
-              primaryColor: "#4f46e5",
-              currency: bt.currency || "USD",
-              timezone: bt.timezone || "UTC",
-              address: "Campus Way",
-              subscriptionPlan: "Enterprise",
-              subscriptionStatus: "active",
-              subscriptionExpiry: "2027-12-31",
-              maxLearners: 5000,
-              currentLearners: 1200,
-              terminology: {
-                learnerSingular: "Student",
-                learnerPlural: "Students",
-                educatorSingular: "Professor",
-                educatorPlural: "Faculty",
-                classSingular: "Course",
-                classPlural: "Courses",
-                programSingular: "Program",
-                programPlural: "Programs",
-                termSingular: "Semester",
-                termPlural: "Semesters"
-              },
-              features: {
-                onlineExams: true,
-                financeModule: true,
-                timetableGenerator: true,
-                bulkSms: true,
-                parentPortal: true
-              }
-            })
-          }
-        })
-
-        setTenants(merged)
-      } catch {
-        // Backend not reachable, keep using offline tenants
-      }
-    }
-
     fetchBackendTenants()
-    return () => { isMounted = false }
   }, [])
 
-  const tenant = tenants.find(t => t.id === activeTenantId || (t as any).slug === activeTenantId) || tenants[0]
+  const tenant = tenants.find(t => 
+    t.id === activeTenantId || 
+    t.slug === activeTenantId || 
+    (t.code && t.code.toLowerCase() === activeTenantId.toLowerCase())
+  ) || tenants[0]
 
   useEffect(() => {
     if (tenant) {
       document.title = `${tenant.name} | OMNI Edu Platform`
       document.documentElement.style.setProperty("--tenant-primary", tenant.primaryColor)
+      localStorage.setItem("omni-active-tenant", tenant.id)
+      localStorage.setItem("omni-active-tenant-id", tenant.id)
       api.setActiveTenantId(tenant.id)
     }
   }, [tenant])
 
-  const setTenantId = (id: string) => {
-    setActiveTenantId(id)
-    localStorage.setItem("omni-active-tenant", id)
-    api.setActiveTenantId(id)
+  const setTenantId = (idOrSlug: string) => {
+    const target = tenants.find(t => 
+      t.id === idOrSlug || 
+      t.slug === idOrSlug || 
+      (t.code && t.code.toLowerCase() === idOrSlug.toLowerCase())
+    )
+    const targetId = target ? target.id : idOrSlug
+    setActiveTenantId(targetId)
+    localStorage.setItem("omni-active-tenant", targetId)
+    localStorage.setItem("omni-active-tenant-id", targetId)
+    api.setActiveTenantId(targetId)
   }
 
   const updateTenant = (updated: Tenant) => {
@@ -161,7 +120,8 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setTenantId,
         t,
         updateTenant,
-        isFeatureEnabled
+        isFeatureEnabled,
+        refreshTenants: fetchBackendTenants
       }}
     >
       {children}

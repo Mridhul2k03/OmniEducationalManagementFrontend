@@ -14,15 +14,13 @@ import {
   BarChart3, 
   Settings, 
   LogOut,
-  Building2,
   ChevronRight,
   ShieldAlert,
-  Sparkles
+  ScrollText
 } from "lucide-react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
 import { cn } from "../../lib/utils"
-import { Badge } from "../ui/Badge"
 
 interface SidebarProps {
   isMobileOpen: boolean
@@ -31,7 +29,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile }) => {
   const { tenant, t } = useTenant()
-  const { user, logout, switchRole, availableRoles } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   const navGroups = [
@@ -69,7 +67,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
     {
       group: "Administration",
       items: [
-        { label: "Tenant & RBAC Settings", path: "/app/settings", icon: Settings, permission: "institute_admin" }
+        { label: "Tenant & RBAC Settings", path: "/app/settings", icon: Settings, permission: "institute_admin" },
+        { label: "Security & Audit Logs", path: "/app/audit-logs", icon: ScrollText, permission: "institute_admin" }
       ]
     }
   ]
@@ -155,30 +154,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
           ))}
         </div>
 
-        {/* Demo Role Switcher & User Profile Footer */}
+        {/* User Profile Footer */}
         <div className="p-3 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 space-y-2">
-          {/* Quick Role Switcher Banner */}
-          <div className="p-2 rounded-lg bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100/80 dark:border-indigo-900/40">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Quick Role Simulator
-              </span>
-              <Badge variant="primary" size="sm">
-                {user?.role.replace("_", " ")}
-              </Badge>
-            </div>
-            <select
-              value={user?.role || "institute_admin"}
-              onChange={(e) => switchRole(e.target.value as any)}
-              className="w-full text-xs bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 rounded p-1 text-slate-700 dark:text-slate-200"
+          {/* SuperAdmin Console Direct Link */}
+          {Boolean(user?.is_superuser) && (
+            <NavLink
+              to="/admin/dashboard"
+              onClick={onCloseMobile}
+              className="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-indigo-500/40 text-indigo-300 hover:bg-slate-800 hover:text-white transition-all text-xs font-semibold shadow-md group"
             >
-              {availableRoles.map((r) => (
-                <option key={r.role} value={r.role}>
-                  {r.label}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />
+                <span>SuperAdmin Console</span>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5 text-indigo-400 group-hover:translate-x-0.5 transition-transform" />
+            </NavLink>
+          )}
 
           {/* User profile */}
           <div className="flex items-center justify-between pt-1">
@@ -192,8 +183,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                 <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
                   {user?.name}
                 </p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                  {user?.email}
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate capitalize">
+                  {user?.role?.replace("_", " ")}
                 </p>
               </div>
             </div>
