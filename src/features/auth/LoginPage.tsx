@@ -1,36 +1,43 @@
 import React, { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../../app/providers/AuthProvider"
-import { useTenant } from "../../app/providers/TenantProvider"
-import { Role } from "../../types"
 import { Input } from "../../components/ui/Input"
 import { Button } from "../../components/ui/Button"
-import { Select } from "../../components/ui/Select"
-import { Lock, Mail, Building, Sparkles, ArrowRight } from "lucide-react"
+import { Lock, Mail, ArrowRight, AlertCircle, ShieldCheck } from "lucide-react"
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
-  const { login, availableRoles } = useAuth()
-  const { tenant, tenants, setTenantId } = useTenant()
+  const { login } = useAuth()
 
-  const [email, setEmail] = useState("eleanor.vance@omni-edu.org")
-  const [password, setPassword] = useState("••••••••••••")
-  const [selectedRole, setSelectedRole] = useState<Role>("institute_admin")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setTimeout(() => {
-      login(email, selectedRole)
-      setIsLoading(false)
-      navigate("/app/dashboard")
-    }, 600)
-  }
+    if (!email.trim() || !password) {
+      setErrorMessage("Please enter both your institutional email address and password.")
+      return
+    }
 
-  const fillDemoRole = (role: Role, demoEmail: string) => {
-    setSelectedRole(role)
-    setEmail(demoEmail)
+    setIsLoading(true)
+    setErrorMessage("")
+
+    try {
+      const success = await login(email.trim(), password)
+      if (success) {
+        navigate("/app/dashboard")
+      } else {
+        setErrorMessage("Authentication failed. Please verify your credentials.")
+      }
+    } catch (err: any) {
+      setErrorMessage(
+        err?.message || "Invalid email or password. Please verify that your account has been provisioned by an institution."
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -48,94 +55,38 @@ export const LoginPage: React.FC = () => {
           Sign In to Portal
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-          Enter your institutional credentials to access your workspace.
+          Enter your registered institutional credentials to access your workspace.
         </p>
       </div>
 
-      {/* Quick Demo Credentials Pill Selector */}
-      <div className="p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 space-y-2">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" /> One-Click Role Simulator
-          </span>
-          <span className="text-[10px] text-slate-400">Select persona:</span>
+      {errorMessage && (
+        <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5 animate-in fade-in">
+          <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+          <div className="flex-1 font-medium">{errorMessage}</div>
         </div>
-        <div className="grid grid-cols-2 gap-1.5">
-          <button
-            type="button"
-            onClick={() => fillDemoRole("institute_admin", "eleanor.vance@omni-edu.org")}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors ${
-              selectedRole === "institute_admin"
-                ? "bg-indigo-600 text-white shadow-xs"
-                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
-            }`}
-          >
-            🏛️ Admin
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemoRole("faculty", "arthur.pendelton@omni-edu.org")}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors ${
-              selectedRole === "faculty"
-                ? "bg-indigo-600 text-white shadow-xs"
-                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
-            }`}
-          >
-            🎓 Faculty
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemoRole("student", "sophia.martinez@student.omni-edu.org")}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors ${
-              selectedRole === "student"
-                ? "bg-indigo-600 text-white shadow-xs"
-                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
-            }`}
-          >
-            📚 Student
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemoRole("accountant", "marcus.sterling@omni-edu.org")}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors ${
-              selectedRole === "accountant"
-                ? "bg-indigo-600 text-white shadow-xs"
-                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
-            }`}
-          >
-            💳 Bursar / Fin
-          </button>
-        </div>
-      </div>
+      )}
 
       <form onSubmit={handleLogin} className="space-y-4">
-        {/* Tenant selection */}
-        <Select
-          label="Target Educational Institution"
-          value={tenant.id}
-          onChange={(e) => setTenantId(e.target.value)}
-          options={tenants.map(t => ({ value: t.id, label: `${t.name} (${t.type.replace('_', ' ')})` }))}
-        />
-
         {/* Email */}
         <Input
-          label="Email Address"
+          label="Institutional Email"
           type="email"
-          required
+          placeholder="user@institution.edu"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          leftIcon={<Mail className="w-4 h-4" />}
-          placeholder="your.name@institution.edu"
+          required
+          autoComplete="email"
+          leftIcon={<Mail className="w-4 h-4 text-slate-400" />}
         />
 
         {/* Password */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
               Password
             </label>
             <Link
-              to="/auth/forgot-password"
+              to="/forgot-password"
               className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
             >
               Forgot password?
@@ -143,32 +94,31 @@ export const LoginPage: React.FC = () => {
           </div>
           <Input
             type="password"
-            required
+            placeholder="••••••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            leftIcon={<Lock className="w-4 h-4" />}
-            placeholder="••••••••••••"
+            required
+            autoComplete="current-password"
+            leftIcon={<Lock className="w-4 h-4 text-slate-400" />}
           />
         </div>
 
+        {/* Submit */}
         <Button
           type="submit"
-          className="w-full"
+          className="w-full mt-2"
           size="lg"
           isLoading={isLoading}
           rightIcon={<ArrowRight className="w-4 h-4" />}
         >
-          Sign In to Workspace
+          Sign In
         </Button>
       </form>
 
-      <div className="text-center pt-2">
-        <Link
-          to="/"
-          className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-        >
-          ← Back to Public Portal
-        </Link>
+      {/* Security note */}
+      <div className="pt-3 text-center text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5">
+        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+        <span>End-to-end encrypted session with RBAC role authorization</span>
       </div>
     </div>
   )

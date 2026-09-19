@@ -19,6 +19,7 @@ export interface TerminologyConfig {
 
 export interface Tenant {
   id: string
+  slug?: string
   name: string
   code: string
   type: TenantType
@@ -50,6 +51,7 @@ export type Role =
   | 'guardian' 
   | 'accountant' 
   | 'super_admin'
+  | 'superadmin'
 
 export interface User {
   id: string
@@ -61,6 +63,8 @@ export interface User {
   department?: string
   assignedClasses?: string[]
   permissions: string[]
+  is_superuser?: boolean
+  is_staff?: boolean
 }
 
 export type StudentStatus = 'active' | 'graduated' | 'suspended' | 'transferred'

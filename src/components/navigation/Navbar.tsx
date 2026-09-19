@@ -1,16 +1,15 @@
 import React, { useState } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useLocation, useNavigate, Link } from "react-router-dom"
 import { 
   Menu, 
   Search, 
   Bell, 
   Sun, 
   Moon, 
-  Building, 
-  Check, 
-  ChevronDown,
-  ShieldCheck,
-  ExternalLink
+  ShieldCheck, 
+  ExternalLink, 
+  BookOpen,
+  Shield
 } from "lucide-react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
@@ -18,6 +17,7 @@ import { useTheme } from "../../app/providers/ThemeProvider"
 import { Button } from "../ui/Button"
 import { Badge } from "../ui/Badge"
 import { Modal } from "../ui/Modal"
+import { BackendStatusBadge } from "../BackendStatusBadge"
 
 interface NavbarProps {
   onOpenMobileMenu: () => void
@@ -27,11 +27,10 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu, onOpenCommandPalette }) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { tenant, tenants, setTenantId } = useTenant()
+  const { tenant } = useTenant()
   const { user } = useAuth()
   const { theme, setTheme } = useTheme()
 
-  const [isTenantDropdownOpen, setIsTenantDropdownOpen] = useState(false)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
 
   // Generate breadcrumb title
@@ -63,6 +62,34 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu, onOpenCommandP
 
         {/* Middle / Right Side Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Live Backend Connection Indicator */}
+          <BackendStatusBadge />
+
+          {/* SuperAdmin Quick Switcher */}
+          {Boolean(user?.is_superuser) && (
+            <Link
+              to="/admin/dashboard"
+              className="hidden sm:inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-indigo-500/40 bg-indigo-600 text-white hover:bg-indigo-500 text-[11px] font-bold shadow-sm shadow-indigo-600/25 transition-all"
+              title="Open SaaS Platform SuperAdmin Control Console"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              <span>Platform Admin</span>
+            </Link>
+          )}
+
+          {/* Interactive API Docs Link */}
+          <a
+            href="http://127.0.0.1:8000/api/v1/docs/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-slate-200/80 bg-slate-50 hover:bg-slate-100 dark:border-slate-700/70 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-[11px] font-medium text-slate-600 dark:text-slate-300 transition-colors shadow-2xs"
+            title="Open Interactive Swagger API Documentation"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
+            <span>API Docs</span>
+            <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+          </a>
+
           {/* Quick Search / Command Palette Button */}
           <button
             onClick={onOpenCommandPalette}
@@ -75,68 +102,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu, onOpenCommandP
             </kbd>
           </button>
 
-          {/* Tenant Switcher Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setIsTenantDropdownOpen(!isTenantDropdownOpen)}
-              className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200/80 bg-white hover:bg-slate-50 dark:border-slate-700/70 dark:bg-slate-900 dark:hover:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 transition-colors"
+          {/* Active Institutional Identity Badge */}
+          <div className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200/80 bg-slate-50/80 dark:border-slate-700/70 dark:bg-slate-800/80 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs">
+            <div
+              className="w-5 h-5 rounded-md flex items-center justify-center text-white text-[10px] font-bold shrink-0 shadow-xs"
+              style={{ backgroundColor: tenant.primaryColor }}
             >
-              <Building className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              <span className="max-w-[120px] sm:max-w-[150px] truncate">{tenant.name}</span>
-              <ChevronDown className="w-3 h-3 text-slate-400" />
-            </button>
-
-            {isTenantDropdownOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setIsTenantDropdownOpen(false)}
-                />
-                <div className="absolute right-0 mt-2 w-72 z-50 rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-800 dark:bg-slate-900 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
-                    <p className="text-[10px] font-semibold uppercase text-slate-400">
-                      Switch Institution Tenant
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Multi-tenant dynamic terminology engine
-                    </p>
-                  </div>
-                  <div className="py-1 space-y-1">
-                    {tenants.map((t) => {
-                      const isCurrent = t.id === tenant.id
-                      return (
-                        <button
-                          key={t.id}
-                          onClick={() => {
-                            setTenantId(t.id)
-                            setIsTenantDropdownOpen(false)
-                          }}
-                          className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-lg text-left text-xs transition-colors ${
-                            isCurrent
-                              ? "bg-indigo-50/80 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 font-semibold"
-                              : "text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
-                          }`}
-                        >
-                          <div
-                            className="w-6 h-6 rounded-md flex items-center justify-center text-white text-[10px] font-bold shrink-0 mt-0.5"
-                            style={{ backgroundColor: t.primaryColor }}
-                          >
-                            {t.code.slice(0, 2)}
-                          </div>
-                          <div className="flex-1 overflow-hidden">
-                            <p className="truncate font-medium">{t.name}</p>
-                            <p className="text-[10px] text-slate-400 capitalize">
-                              {t.type.replace("_", " ")} • {t.currency}
-                            </p>
-                          </div>
-                          {isCurrent && <Check className="w-4 h-4 text-indigo-600 shrink-0 mt-1" />}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              </>
-            )}
+              {tenant.code ? tenant.code.slice(0, 2) : "ED"}
+            </div>
+            <span className="max-w-[130px] sm:max-w-[180px] truncate">{tenant.name}</span>
           </div>
 
           {/* Theme Toggle Button */}

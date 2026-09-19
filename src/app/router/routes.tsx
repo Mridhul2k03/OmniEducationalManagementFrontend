@@ -20,6 +20,18 @@ import { CommunicationsPage } from "../../features/communications/Communications
 import { LearningPage } from "../../features/learning/LearningPage"
 import { ReportsPage } from "../../features/reports/ReportsPage"
 import { SettingsPage } from "../../features/settings/SettingsPage"
+import { AuditLogsPage } from "../../features/audit/AuditLogsPage"
+
+// Platform SuperAdmin Console Pages
+import { AdminRoute } from "../../features/admin/AdminRoute"
+import { AdminLayout } from "../../features/admin/AdminLayout"
+import { AdminDashboardPage } from "../../features/admin/AdminDashboardPage"
+import { AdminUsersPage } from "../../features/admin/AdminUsersPage"
+import { AdminTenantsPage } from "../../features/admin/AdminTenantsPage"
+import { AdminSubscriptionsPage } from "../../features/admin/AdminSubscriptionsPage"
+import { AdminAuditLogsPage } from "../../features/admin/AdminAuditLogsPage"
+import { AdminSystemPage } from "../../features/admin/AdminSystemPage"
+
 import { Button } from "../../components/ui/Button"
 import { AlertTriangle, Home } from "lucide-react"
 
@@ -64,6 +76,27 @@ export const router = createBrowserRouter([
     ]
   },
 
+  // Platform SuperAdmin Console (Protected for SuperUser / Root Admins)
+  {
+    path: "/admin",
+    element: <AdminRoute />,
+    errorElement: <NotFoundPage />,
+    children: [
+      {
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+          { path: "dashboard", element: <AdminDashboardPage /> },
+          { path: "users", element: <AdminUsersPage /> },
+          { path: "tenants", element: <AdminTenantsPage /> },
+          { path: "subscriptions", element: <AdminSubscriptionsPage /> },
+          { path: "audit-logs", element: <AdminAuditLogsPage /> },
+          { path: "system", element: <AdminSystemPage /> },
+        ]
+      }
+    ]
+  },
+
   // Authenticated Tenant App Layout
   {
     path: "/app",
@@ -86,6 +119,7 @@ export const router = createBrowserRouter([
           { path: "learning", element: <LearningPage /> },
           { path: "reports", element: <ReportsPage /> },
           { path: "settings", element: <SettingsPage /> },
+          { path: "audit-logs", element: <AuditLogsPage /> },
         ]
       }
     ]

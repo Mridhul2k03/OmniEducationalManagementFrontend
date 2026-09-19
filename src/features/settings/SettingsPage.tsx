@@ -7,7 +7,8 @@ import { Select } from "../../components/ui/Select"
 import { Badge } from "../../components/ui/Badge"
 import { Tabs } from "../../components/ui/Tabs"
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/Card"
-import { Settings, Shield, Building2, Layers, CheckCircle2, Sliders, Save } from "lucide-react"
+import { Settings, Shield, Building2, Layers, CheckCircle2, Sliders, Save, ScrollText } from "lucide-react"
+import { AuditLogsPage } from "../audit/AuditLogsPage"
 
 export const SettingsPage: React.FC = () => {
   const { tenant, updateTenant, t } = useTenant()
@@ -41,6 +42,7 @@ export const SettingsPage: React.FC = () => {
     { id: "terminology", label: "Adaptive Terminology Engine", icon: <Sliders /> },
     { id: "rbac", label: "Roles & Permissions Matrix", icon: <Shield /> },
     { id: "subscription", label: "Plan & Usage Limits", icon: <Layers /> },
+    { id: "audit", label: "Security & Audit Trail", icon: <ScrollText /> },
   ]
 
   const permissionsMatrix = [
@@ -294,6 +296,13 @@ export const SettingsPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Tab 5: Security & Audit Trail */}
+      {activeTab === "audit" && (
+        <div className="pt-2">
+          <AuditLogsPage />
+        </div>
       )}
     </div>
   )

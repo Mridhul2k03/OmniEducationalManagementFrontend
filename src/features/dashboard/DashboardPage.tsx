@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { 
   Users, 
@@ -11,7 +11,8 @@ import {
   Plus, 
   FileSpreadsheet, 
   Sparkles,
-  TrendingUp
+  TrendingUp,
+  ShieldCheck
 } from "lucide-react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
@@ -20,54 +21,73 @@ import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/Ca
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
 import { formatCurrency } from "../../lib/utils"
-import { appStorage } from "../../services/storage"
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts"
-
-const ENROLLMENT_DATA = [
-  { month: "Jan", learners: 2800, attendance: 92 },
-  { month: "Feb", learners: 2950, attendance: 94 },
-  { month: "Mar", learners: 3100, attendance: 91 },
-  { month: "Apr", learners: 3200, attendance: 95 },
-  { month: "May", learners: 3280, attendance: 93 },
-  { month: "Jun", learners: 3420, attendance: 96 },
-]
-
-const DEPARTMENT_DISTRIBUTION = [
-  { name: "Computer Science", value: 1240, color: "#6366f1" },
-  { name: "Robotics & Hardware", value: 820, color: "#06b6d4" },
-  { name: "Business & Econ", value: 680, color: "#10b981" },
-  { name: "Mathematics", value: 680, color: "#f59e0b" },
-]
+import { api } from "../../services/api"
 
 export const DashboardPage: React.FC = () => {
   const { tenant, t } = useTenant()
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  const students = appStorage.getStudents()
-  const staff = appStorage.getStaff()
-  const invoices = appStorage.getInvoices()
-  const announcements = appStorage.getAnnouncements().slice(0, 3)
-  const timetable = appStorage.getTimetable().slice(0, 4)
+  const [studentsCount, setStudentsCount] = useState<number>(0)
+  const [staffCount, setStaffCount] = useState<number>(0)
+  const [invoices, setInvoices] = useState<any[]>([])
+  const [announcements, setAnnouncements] = useState<any[]>([])
+  const [classesCount, setClassesCount] = useState<number>(0)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    let isMounted = true
+    setIsLoading(true)
+
+    Promise.all([
+      api.students.list(),
+      api.staff.list(),
+      api.finance.getInvoices(),
+      api.communications.getAnnouncements(),
+      api.academics.getClasses(),
+    ]).then(([studentsRes, staffRes, invoicesRes, ancRes, classesRes]) => {
+      if (!isMounted) return
+      if (Array.isArray(studentsRes)) setStudentsCount(studentsRes.length)
+      if (Array.isArray(staffRes)) setStaffCount(staffRes.length)
+      if (Array.isArray(invoicesRes)) setInvoices(invoicesRes)
+      if (Array.isArray(classesRes)) setClassesCount(classesRes.length)
+      if (Array.isArray(ancRes)) {
+        setAnnouncements(ancRes.slice(0, 3).map((a: any) => ({
+          id: a.id,
+          title: a.title,
+          content: a.content,
+          author: a.author_name || a.author?.full_name || "Administration",
+          authorRole: "Admin",
+          date: a.published_at ? a.published_at.split("T")[0] : new Date().toISOString().split("T")[0],
+          priority: "normal",
+          audience: a.target_audience || "all",
+          category: "Academic",
+        })))
+      }
+    }).catch((err) => {
+      console.warn("Dashboard sync warning:", err)
+    }).finally(() => {
+      if (isMounted) setIsLoading(false)
+    })
+
+    return () => { isMounted = false }
+  }, [tenant.id])
 
   const totalOutstanding = invoices
-    .filter(i => i.status !== "paid")
-    .reduce((sum, i) => sum + (i.amount - i.paidAmount), 0)
+    .filter((i: any) => i.status !== "paid")
+    .reduce((sum: number, i: any) => {
+      const amt = Number(i.total_amount ?? i.amount ?? 0)
+      const paid = Number(i.paid_amount ?? i.paidAmount ?? 0)
+      return sum + (amt - paid)
+    }, 0)
 
-  const totalCollected = invoices.reduce((sum, i) => sum + i.paidAmount, 0)
+  const totalCollected = invoices.reduce((sum: number, i: any) => {
+    return sum + Number(i.paid_amount ?? i.paidAmount ?? 0)
+  }, 0)
+
+  const totalInvoiced = invoices.reduce((sum: number, i: any) => {
+    return sum + Number(i.total_amount ?? i.amount ?? 0)
+  }, 0)
 
   return (
     <div className="space-y-6">
@@ -84,27 +104,28 @@ export const DashboardPage: React.FC = () => {
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Welcome back, {user?.name.split(" ")[0]}!
+              Welcome back, {user?.name || "Administrator"}
             </h1>
-            <p className="text-xs sm:text-sm text-indigo-200/90 max-w-xl">
-              Here is your live institutional overview for {tenant.name}. Terminology is automatically adapted for {tenant.type.replace('_', ' ')}.
+            <p className="text-xs sm:text-sm text-indigo-100/80 max-w-xl">
+              Live multi-tenant institutional console. Real-time synchronisation active on port 8000.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          <div className="flex flex-wrap items-center gap-2.5">
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => navigate("/app/students")}
-              leftIcon={<Plus className="w-3.5 h-3.5" />}
+              onClick={() => navigate("/app/students?admit=true")}
+              leftIcon={<Plus className="w-4 h-4" />}
             >
               Admit {t("learner")}
             </Button>
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={() => navigate("/app/attendance")}
-              leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}
+              className="bg-white/10 hover:bg-white/20 text-white border-white/20"
+              leftIcon={<CalendarClock className="w-4 h-4" />}
             >
               Mark Attendance
             </Button>
@@ -112,208 +133,162 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Decorative background glow */}
-        <div className="absolute right-0 top-0 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
       </div>
 
-      {/* KPI Stats Cards */}
+      {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title={`Total ${t("learners")}`}
-          value={tenant.currentLearners.toLocaleString()}
-          change={{ value: "8.4%", isPositive: true, label: "vs last term" }}
+          title={`Total Enrolled ${t("learners")}`}
+          value={studentsCount.toLocaleString()}
+          description="Active student registry records"
           icon={<Users className="w-5 h-5" />}
-          colorVariant="indigo"
         />
         <StatsCard
-          title={`Active ${t("educators")}`}
-          value={staff.length}
-          description="100% faculty allocated"
+          title={`Active ${t("educators")} & Staff`}
+          value={staffCount.toLocaleString()}
+          description="Faculty & administration members"
           icon={<GraduationCap className="w-5 h-5" />}
-          colorVariant="emerald"
         />
         <StatsCard
-          title="Attendance Rate"
-          value="95.2%"
-          change={{ value: "1.2%", isPositive: true, label: "this week" }}
-          icon={<CheckCircle2 className="w-5 h-5" />}
-          colorVariant="sky"
+          title={`Academic ${t("classes")}`}
+          value={classesCount.toLocaleString()}
+          description="Class cohorts & lecture streams"
+          icon={<CalendarClock className="w-5 h-5" />}
         />
         <StatsCard
-          title="Fee Revenue"
+          title="Total Fee Collections"
           value={formatCurrency(totalCollected, tenant.currency)}
-          description={`${formatCurrency(totalOutstanding, tenant.currency)} pending collection`}
-          icon={<Wallet className="w-5 h-5" />}
-          colorVariant="amber"
+          description={`Out of ${formatCurrency(totalInvoiced, tenant.currency)} billed`}
+          icon={<Wallet className="w-5 h-5 text-emerald-600" />}
         />
       </div>
 
-      {/* Charts Section */}
+      {/* Main Content Split: Bulletins & Quick Navigation */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Growth Chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle>{t("learner")} Enrollment & Retention Trajectory</CardTitle>
-              <p className="text-xs text-slate-500">6-month trend across active cohorts</p>
-            </div>
-            <Badge variant="primary">2026 Academic Year</Badge>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={ENROLLMENT_DATA}>
-                  <defs>
-                    <linearGradient id="colorLearners" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
-                  <YAxis stroke="#94a3b8" fontSize={12} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#0f172a",
-                      color: "#fff",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                      border: "none"
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="learners"
-                    stroke="#6366f1"
-                    strokeWidth={2.5}
-                    fillOpacity={1}
-                    fill="url(#colorLearners)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Distribution Donut Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Cohort Distribution</CardTitle>
-            <p className="text-xs text-slate-500">Learners by department or program</p>
-          </CardHeader>
-          <CardContent className="pt-4 flex flex-col items-center">
-            <div className="h-48 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={DEPARTMENT_DISTRIBUTION}
-                    innerRadius={50}
-                    outerRadius={75}
-                    paddingAngle={4}
-                    dataKey="value"
-                  >
-                    {DEPARTMENT_DISTRIBUTION.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="w-full space-y-1.5 pt-2 text-xs">
-              {DEPARTMENT_DISTRIBUTION.map((item) => (
-                <div key={item.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-slate-600 dark:text-slate-300 truncate max-w-[140px]">{item.name}</span>
+        {/* Left 2 Cols: Institutional Overview & Recent Announcements */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Recent Broadcasts */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Megaphone className="w-4 h-4 text-indigo-600" />
+                  Live Institutional Circulars
+                </CardTitle>
+                <p className="text-xs text-slate-500 mt-0.5">Most recent broadcasts from administrative office</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/app/communications")}
+              >
+                View All
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-0">
+              {announcements.map((anc) => (
+                <div
+                  key={anc.id}
+                  className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="font-semibold text-slate-900 dark:text-white text-xs sm:text-sm">
+                      {anc.title}
+                    </span>
+                    <span className="text-[10px] text-slate-400 shrink-0 font-medium">
+                      {anc.date}
+                    </span>
                   </div>
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">{item.value}</span>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                    {anc.content}
+                  </p>
+                  <div className="mt-2 flex items-center gap-2 text-[10px] text-slate-400">
+                    <span>By {anc.author}</span>
+                    <span>•</span>
+                    <span className="uppercase font-semibold text-indigo-600 dark:text-indigo-400">{anc.audience}</span>
+                  </div>
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Two Column Widget Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Today's Schedule preview */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle>Today's Academic Schedule</CardTitle>
-              <p className="text-xs text-slate-500">Live lecture & lab sessions</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/app/timetable")}
-            >
-              Full Timetable →
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-2">
-            {timetable.map((slot) => (
-              <div
-                key={slot.id}
-                className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-800/40 text-xs"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold text-[11px] shrink-0">
-                    {slot.startTime}
-                  </div>
-                  <div>
-                    <h5 className="font-semibold text-slate-900 dark:text-slate-100">
-                      {slot.courseName}
-                    </h5>
-                    <p className="text-slate-500 dark:text-slate-400 text-[11px]">
-                      {slot.instructorName} • {slot.room}
-                    </p>
-                  </div>
+              {announcements.length === 0 && !isLoading && (
+                <div className="p-8 text-center text-xs text-slate-400">
+                  No circulars published yet. Use the Communications page to broadcast news.
                 </div>
-                <Badge variant="secondary">{slot.batchName}</Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Latest Announcements */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle>Institutional Bulletins</CardTitle>
-              <p className="text-xs text-slate-500">Official notices & broadcasts</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/app/communications")}
-            >
-              All Bulletins →
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-2">
-            {announcements.map((anc) => (
-              <div
-                key={anc.id}
-                className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-800/40 text-xs space-y-1.5"
+        {/* Right Col: Quick Modules & System Integrity */}
+        <div className="space-y-6">
+          {/* Quick Actions Card */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Quick Operations</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 pt-0">
+              <button
+                type="button"
+                onClick={() => navigate("/app/students")}
+                className="w-full p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-500 text-left transition-all flex items-center justify-between group"
               >
-                <div className="flex items-center justify-between">
-                  <Badge variant={anc.priority === "urgent" ? "danger" : anc.priority === "high" ? "warning" : "secondary"}>
-                    {anc.priority}
-                  </Badge>
-                  <span className="text-[11px] text-slate-400">{anc.date}</span>
+                <div>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600">Student Directory</p>
+                  <p className="text-[11px] text-slate-400">View and manage admissions</p>
                 </div>
-                <h5 className="font-semibold text-slate-900 dark:text-slate-100">
-                  {anc.title}
-                </h5>
-                <p className="text-slate-600 dark:text-slate-300 line-clamp-2 text-[11px]">
-                  {anc.content}
-                </p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+                <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate("/app/staff")}
+                className="w-full p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-500 text-left transition-all flex items-center justify-between group"
+              >
+                <div>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600">Faculty & Staff</p>
+                  <p className="text-[11px] text-slate-400">Instructor department assignments</p>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate("/app/finance")}
+                className="w-full p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-500 text-left transition-all flex items-center justify-between group"
+              >
+                <div>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600">Fee Collection Ledger</p>
+                  <p className="text-[11px] text-slate-400">Record payments and audit dues</p>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate("/app/examinations")}
+                className="w-full p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-500 text-left transition-all flex items-center justify-between group"
+              >
+                <div>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600">Examinations & Marks</p>
+                  <p className="text-[11px] text-slate-400">Enter grades and export transcripts</p>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
+              </button>
+            </CardContent>
+          </Card>
+
+          {/* Multi-Tenant Security Badge */}
+          <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 space-y-2">
+            <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold text-xs">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              Multi-Tenant Data Isolation
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              All queries and transactions are strictly scoped to <span className="font-semibold text-indigo-700 dark:text-indigo-300">{tenant.name}</span> with row-level security headers.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )

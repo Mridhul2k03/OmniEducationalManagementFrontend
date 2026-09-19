@@ -1,8 +1,10 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { useSearchParams } from "react-router-dom"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
-import { Student } from "../../types"
+import { Student, StudentStatus } from "../../types"
 import { appStorage } from "../../services/storage"
+import { api } from "../../services/api"
 import { DataTable, Column } from "../../components/tables/DataTable"
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
@@ -10,21 +12,70 @@ import { Modal } from "../../components/ui/Modal"
 import { Input } from "../../components/ui/Input"
 import { Select } from "../../components/ui/Select"
 import { formatCurrency } from "../../lib/utils"
-import { Plus, UserCheck, Eye, Trash2, Mail, Phone, Calendar, BookOpen, AlertCircle } from "lucide-react"
+import { Plus, UserCheck, Eye, Edit3, Trash2, Mail, Phone, Calendar, BookOpen, AlertCircle, RefreshCw, Loader2, CheckCircle2 } from "lucide-react"
+
+function mapBackendStudent(s: any): Student {
+  const guardian = s.guardian_links?.[0]
+  const genderMap: Record<string, "male" | "female" | "other"> = {
+    M: "male",
+    F: "female",
+    O: "other",
+  }
+  const statusMap: Record<string, StudentStatus> = {
+    admitted: "active",
+    enrolled: "active",
+    applied: "active",
+    suspended: "suspended",
+    graduated: "graduated",
+    withdrawn: "transferred",
+    active: "active",
+  }
+
+  const fn = s.first_name || ""
+  const ln = s.last_name || ""
+  const fallbackEmail = `${fn.toLowerCase()}.${ln.toLowerCase()}@omni-edu.org`
+
+  return {
+    id: s.id,
+    admissionNumber: s.admission_number || `ADM-${String(s.id).slice(0, 5)}`,
+    firstName: fn,
+    lastName: ln,
+    email: s.user?.email || s.email || fallbackEmail,
+    avatar: s.avatar || s.user?.avatar_url,
+    gender: genderMap[s.gender] || (s.gender as any) || "other",
+    dateOfBirth: s.date_of_birth || "2005-01-01",
+    gradeOrProgram: s.grade_or_program || s.enrollments?.[0]?.class_cohort_name || s.current_class_name || "Academic Program",
+    sectionOrBatch: s.section_or_batch || s.enrollments?.[0]?.section_name || s.current_section_name || "Section A",
+    enrollmentDate: s.admission_date || s.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+    status: statusMap[s.status] || "active",
+    guardianName: guardian?.guardian_name || s.guardian_name || "Legal Guardian",
+    guardianRelationship: guardian?.relationship || "Guardian",
+    guardianContact: guardian?.phone_number || s.guardian_contact || "+1 (555) 000-0000",
+    outstandingBalance: Number(s.outstanding_balance ?? 0),
+    attendanceRate: Number(s.attendance_rate ?? 95),
+    gpa: Number(s.gpa ?? 3.8),
+  }
+}
 
 export const StudentsPage: React.FC = () => {
   const { tenant, t } = useTenant()
-  const { can } = useAuth()
-  const [students, setStudents] = useState<Student[]>(() => appStorage.getStudents())
+  const { can, user } = useAuth()
+  const [searchParams] = useSearchParams()
+  const [students, setStudents] = useState<Student[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   // Modals state
   const [isAdmitModalOpen, setIsAdmitModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [studentToEdit, setStudentToEdit] = useState<Student | null>(null)
 
   // New Admission Form State
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
+  const [dob, setDob] = useState("2005-01-01")
   const [gender, setGender] = useState<"male" | "female" | "other">("female")
   const [gradeOrProgram, setGradeOrProgram] = useState("B.Sc. Computer Science")
   const [sectionOrBatch, setSectionOrBatch] = useState("Cohort A - Year 1")
@@ -32,58 +83,203 @@ export const StudentsPage: React.FC = () => {
   const [guardianContact, setGuardianContact] = useState("")
   const [formError, setFormError] = useState("")
 
-  const refreshData = () => {
-    setStudents([...appStorage.getStudents()])
+  // Edit Form State
+  const [editForm, setEditForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    dateOfBirth: "2005-01-01",
+    gender: "female",
+    gradeOrProgram: "",
+    sectionOrBatch: "",
+    status: "active",
+    guardianName: "",
+    guardianContact: "",
+    outstandingBalance: 0,
+    attendanceRate: 95,
+  })
+  const [editError, setEditError] = useState("")
+  const [editSuccess, setEditSuccess] = useState("")
+
+  const canManage = can("institute_admin") || can("students.create") || user?.is_superuser
+  const canUpdate = can("institute_admin") || can("students.update") || can("faculty") || user?.is_superuser
+  const canDelete = can("institute_admin") || can("students.delete") || user?.is_superuser
+
+  const fetchStudents = async () => {
+    setIsLoading(true)
+    try {
+      const data = await api.students.list()
+      if (Array.isArray(data)) {
+        const mapped = data.map(mapBackendStudent)
+        setStudents(mapped)
+      } else {
+        setStudents([])
+      }
+    } catch (err) {
+      console.warn("Could not fetch students from API:", err)
+      setStudents(appStorage.getStudents())
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleAdmitSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchStudents()
+  }, [tenant.id, tenant.slug])
+
+  useEffect(() => {
+    if (searchParams.get("admit") === "true" && canManage) {
+      setIsAdmitModalOpen(true)
+    }
+  }, [searchParams, canManage])
+
+  const handleAdmitSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!firstName || !lastName || !email) {
-      setFormError("Please fill out all required fields.")
+    if (!firstName.trim() || !lastName.trim()) {
+      setFormError("Please fill out first and last name.")
       return
     }
 
-    // Check duplicate email
-    if (students.some(s => s.email.toLowerCase() === email.toLowerCase())) {
-      setFormError(`A ${t("learner")} with email ${email} already exists.`)
-      return
-    }
-
-    const admNum = `ADM-${new Date().getFullYear()}-${String(students.length + 1).padStart(3, "0")}`
-    appStorage.addStudent({
-      admissionNumber: admNum,
-      firstName,
-      lastName,
-      email,
-      gender,
-      dateOfBirth: "2005-01-01",
-      gradeOrProgram,
-      sectionOrBatch,
-      enrollmentDate: new Date().toISOString().split("T")[0],
-      status: "active",
-      guardianName: guardianName || "Legal Guardian",
-      guardianRelationship: "Parent",
-      guardianContact: guardianContact || "+1 (555) 000-0000",
-      outstandingBalance: 0,
-      attendanceRate: 100,
-      gpa: 4.0
-    })
-
-    refreshData()
-    setIsAdmitModalOpen(false)
-    // Reset form
-    setFirstName("")
-    setLastName("")
-    setEmail("")
-    setGuardianName("")
-    setGuardianContact("")
     setFormError("")
+    setIsSubmitting(true)
+
+    try {
+      const gFirst = guardianName.trim() ? guardianName.trim().split(" ")[0] : "Legal"
+      const gLast = guardianName.trim() && guardianName.trim().split(" ").length > 1 
+        ? guardianName.trim().split(" ").slice(1).join(" ") 
+        : "Guardian"
+
+      const payload = {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: email.trim() || undefined,
+        class_name: gradeOrProgram,
+        section_name: sectionOrBatch,
+        date_of_birth: dob || "2005-01-01",
+        gender: gender === "female" ? "F" : gender === "male" ? "M" : "O",
+        admission_date: new Date().toISOString().split("T")[0],
+        guardian: {
+          first_name: gFirst,
+          last_name: gLast,
+          phone_number: guardianContact.trim() || "+1 (555) 000-0000",
+          relationship: "legal_guardian",
+        }
+      }
+
+      await api.students.admit(payload)
+
+      // Sync local storage for resilience
+      const admNum = `ADM-${new Date().getFullYear()}-${String(students.length + 1).padStart(3, "0")}`
+      appStorage.addStudent({
+        admissionNumber: admNum,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim() || `${firstName.toLowerCase()}.${lastName.toLowerCase()}@omni-edu.org`,
+        gender,
+        dateOfBirth: dob || "2005-01-01",
+        gradeOrProgram,
+        sectionOrBatch,
+        enrollmentDate: new Date().toISOString().split("T")[0],
+        status: "active",
+        guardianName: guardianName || "Legal Guardian",
+        guardianRelationship: "Parent",
+        guardianContact: guardianContact || "+1 (555) 000-0000",
+        outstandingBalance: 0,
+        attendanceRate: 100,
+        gpa: 4.0
+      })
+
+      await fetchStudents()
+      setIsAdmitModalOpen(false)
+      // Reset form
+      setFirstName("")
+      setLastName("")
+      setEmail("")
+      setGuardianName("")
+      setGuardianContact("")
+      setFormError("")
+    } catch (err: any) {
+      console.error("Admit student error:", err)
+      setFormError(err.message || "Failed to admit student. Please verify server connection.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleDelete = (id: string) => {
-    if (window.confirm(`Are you sure you want to remove this ${t("learner")} record?`)) {
+  const handleOpenEdit = (s: Student) => {
+    setStudentToEdit(s)
+    setEditForm({
+      firstName: s.firstName,
+      lastName: s.lastName,
+      email: s.email,
+      dateOfBirth: s.dateOfBirth,
+      gender: s.gender,
+      gradeOrProgram: s.gradeOrProgram,
+      sectionOrBatch: s.sectionOrBatch,
+      status: s.status,
+      guardianName: s.guardianName,
+      guardianContact: s.guardianContact,
+      outstandingBalance: s.outstandingBalance,
+      attendanceRate: s.attendanceRate,
+    })
+    setEditError("")
+    setEditSuccess("")
+    setIsEditModalOpen(true)
+  }
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!studentToEdit) return
+    setIsSubmitting(true)
+    setEditError("")
+    setEditSuccess("")
+
+    try {
+      await api.students.update(studentToEdit.id, {
+        first_name: editForm.firstName.trim(),
+        last_name: editForm.lastName.trim(),
+        gender: editForm.gender === "female" ? "F" : editForm.gender === "male" ? "M" : "O",
+        date_of_birth: editForm.dateOfBirth,
+        status: editForm.status === "active" ? "enrolled" : editForm.status,
+      })
+
+      appStorage.updateStudent(studentToEdit.id, {
+        firstName: editForm.firstName.trim(),
+        lastName: editForm.lastName.trim(),
+        email: editForm.email.trim(),
+        gender: editForm.gender as any,
+        dateOfBirth: editForm.dateOfBirth,
+        gradeOrProgram: editForm.gradeOrProgram,
+        sectionOrBatch: editForm.sectionOrBatch,
+        status: editForm.status as any,
+        guardianName: editForm.guardianName,
+        guardianContact: editForm.guardianContact,
+        outstandingBalance: Number(editForm.outstandingBalance),
+        attendanceRate: Number(editForm.attendanceRate),
+      })
+
+      setEditSuccess("Student record updated successfully!")
+      await fetchStudents()
+      setTimeout(() => {
+        setIsEditModalOpen(false)
+        setStudentToEdit(null)
+      }, 1000)
+    } catch (err: any) {
+      setEditError(err.message || "Failed to update student record.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm(`Are you sure you want to remove this ${t("learner")} record? This action will archive their profile.`)) {
+      try {
+        await api.students.delete(id)
+      } catch (err) {
+        console.warn("Backend student delete failed:", err)
+      }
       appStorage.deleteStudent(id)
-      refreshData()
+      await fetchStudents()
       if (selectedStudent?.id === id) setSelectedStudent(null)
     }
   }
@@ -93,7 +289,7 @@ export const StudentsPage: React.FC = () => {
       key: "admissionNumber",
       header: "Adm. ID",
       sortable: true,
-      render: (s) => <span className="font-mono text-xs font-semibold">{s.admissionNumber}</span>
+      render: (s) => <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">{s.admissionNumber}</span>
     },
     {
       key: "firstName",
@@ -102,7 +298,7 @@ export const StudentsPage: React.FC = () => {
       render: (s) => (
         <div className="flex items-center gap-2.5">
           <img
-            src={s.avatar || `https://ui-avatars.com/api/?name=${s.firstName}+${s.lastName}&background=6366f1&color=fff`}
+            src={s.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.firstName)}+${encodeURIComponent(s.lastName)}&background=6366f1&color=fff`}
             alt={s.firstName}
             className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700"
           />
@@ -184,7 +380,18 @@ export const StudentsPage: React.FC = () => {
           >
             <Eye className="w-3.5 h-3.5" />
           </Button>
-          {can("institute_admin") && (
+          {canUpdate && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOpenEdit(s)}
+              className="h-8 w-8 p-0 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50"
+              title="Edit Student"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+            </Button>
+          )}
+          {canDelete && (
             <Button
               variant="ghost"
               size="sm"
@@ -213,12 +420,25 @@ export const StudentsPage: React.FC = () => {
           </p>
         </div>
 
-        <Button
-          onClick={() => setIsAdmitModalOpen(true)}
-          leftIcon={<Plus className="w-4 h-4" />}
-        >
-          Admit New {t("learner")}
-        </Button>
+        <div className="flex items-center gap-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchStudents}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
+          {canManage && (
+            <Button
+              onClick={() => setIsAdmitModalOpen(true)}
+              leftIcon={<Plus className="w-4 h-4" />}
+            >
+              Admit New {t("learner")}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Main Table */}
@@ -264,14 +484,20 @@ export const StudentsPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input
-              label="Institutional Email *"
+              label="Institutional Email"
               type="email"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="liam.vance@student.edu"
+            />
+            <Input
+              label="Date of Birth *"
+              type="date"
+              required
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
             />
             <Select
               label="Gender"
@@ -324,16 +550,137 @@ export const StudentsPage: React.FC = () => {
             <Button
               type="button"
               variant="outline"
+              disabled={isSubmitting}
               onClick={() => setIsAdmitModalOpen(false)}
             >
               Cancel
             </Button>
-            <Button type="submit">
-              Complete Admission
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              leftIcon={isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : undefined}
+            >
+              {isSubmitting ? "Submitting Admission..." : "Complete Admission"}
             </Button>
           </div>
         </form>
       </Modal>
+
+      {/* Edit Student Modal */}
+      {isEditModalOpen && studentToEdit && (
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          title={`Edit ${t("learner")} Details`}
+          description={`Update institutional records for ${studentToEdit.firstName} ${studentToEdit.lastName}`}
+          size="lg"
+        >
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            {editError && (
+              <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 text-rose-600 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{editError}</span>
+              </div>
+            )}
+            {editSuccess && (
+              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 text-emerald-600 text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
+                <span>{editSuccess}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="First Name *"
+                required
+                value={editForm.firstName}
+                onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+              />
+              <Input
+                label="Last Name *"
+                required
+                value={editForm.lastName}
+                onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Input
+                label="Institutional Email"
+                type="email"
+                value={editForm.email}
+                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+              />
+              <Input
+                label="Date of Birth"
+                type="date"
+                value={editForm.dateOfBirth}
+                onChange={(e) => setEditForm({ ...editForm, dateOfBirth: e.target.value })}
+              />
+              <Select
+                label="Status"
+                value={editForm.status}
+                onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                options={[
+                  { value: "active", label: "Active / Enrolled" },
+                  { value: "suspended", label: "Suspended" },
+                  { value: "graduated", label: "Graduated" },
+                  { value: "transferred", label: "Withdrawn / Transferred" }
+                ]}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label={`${t("program")} / Major`}
+                value={editForm.gradeOrProgram}
+                onChange={(e) => setEditForm({ ...editForm, gradeOrProgram: e.target.value })}
+              />
+              <Input
+                label={`${t("class")} / Cohort`}
+                value={editForm.sectionOrBatch}
+                onChange={(e) => setEditForm({ ...editForm, sectionOrBatch: e.target.value })}
+              />
+            </div>
+
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-3">
+              <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                Guardian & Ledger
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Guardian Full Name"
+                  value={editForm.guardianName}
+                  onChange={(e) => setEditForm({ ...editForm, guardianName: e.target.value })}
+                />
+                <Input
+                  label="Guardian Contact Phone"
+                  value={editForm.guardianContact}
+                  onChange={(e) => setEditForm({ ...editForm, guardianContact: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                leftIcon={isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : undefined}
+              >
+                {isSubmitting ? "Saving Updates..." : "Save Changes"}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
 
       {/* Student Profile Detail Modal */}
       {selectedStudent && (
@@ -347,7 +694,7 @@ export const StudentsPage: React.FC = () => {
             {/* Header info banner */}
             <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80">
               <img
-                src={selectedStudent.avatar || `https://ui-avatars.com/api/?name=${selectedStudent.firstName}+${selectedStudent.lastName}&background=6366f1&color=fff`}
+                src={selectedStudent.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedStudent.firstName)}+${encodeURIComponent(selectedStudent.lastName)}&background=6366f1&color=fff`}
                 alt={selectedStudent.firstName}
                 className="w-16 h-16 rounded-full object-cover border-2 border-indigo-500"
               />
@@ -418,9 +765,17 @@ export const StudentsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex justify-end pt-2">
-              <Button variant="outline" size="sm" onClick={() => setSelectedStudent(null)}>
-                Close Window
+            <div className="flex justify-end gap-2 pt-2">
+              {canUpdate && (
+                <Button variant="outline" size="sm" onClick={() => {
+                  setSelectedStudent(null)
+                  handleOpenEdit(selectedStudent)
+                }}>
+                  <Edit3 className="w-3.5 h-3.5 mr-1" /> Edit Student
+                </Button>
+              )}
+              <Button variant="primary" size="sm" onClick={() => setSelectedStudent(null)}>
+                Close
               </Button>
             </div>
           </div>

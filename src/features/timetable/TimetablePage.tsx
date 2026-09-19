@@ -1,11 +1,27 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useTenant } from "../../app/providers/TenantProvider"
+import { useAuth } from "../../app/providers/AuthProvider"
 import { TimetableSlot } from "../../types"
+import { api } from "../../services/api"
 import { appStorage } from "../../services/storage"
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
+import { Modal } from "../../components/ui/Modal"
+import { Input } from "../../components/ui/Input"
 import { Select } from "../../components/ui/Select"
-import { Printer, Calendar, Clock, MapPin, UserCheck, AlertTriangle } from "lucide-react"
+import { 
+  Printer, 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Plus, 
+  Edit3, 
+  Trash2, 
+  UserCheck, 
+  AlertCircle, 
+  CheckCircle2,
+  Loader2 
+} from "lucide-react"
 
 const DAYS: ("Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday")[] = [
   "Monday",
@@ -24,8 +40,196 @@ const TIME_SLOTS = [
 
 export const TimetablePage: React.FC = () => {
   const { tenant, t } = useTenant()
-  const timetable = appStorage.getTimetable()
-  const [selectedCohort, setSelectedCohort] = useState("Cohort A - Year 3")
+  const { can, user } = useAuth()
+  const [classes, setClasses] = useState<any[]>([])
+  const [subjects, setSubjects] = useState<any[]>([])
+  const [selectedCohortId, setSelectedCohortId] = useState("")
+  const [timetable, setTimetable] = useState<TimetableSlot[]>([])
+  
+  // Modals
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedSlot, setSelectedSlot] = useState<TimetableSlot | null>(null)
+  
+  // Form State
+  const [slotForm, setSlotForm] = useState({
+    dayOfWeek: "Monday" as TimetableSlot["dayOfWeek"],
+    startTime: "09:00",
+    endTime: "10:30",
+    courseName: "",
+    courseCode: "",
+    instructorName: "Faculty Member",
+    room: "Lecture Hall 1",
+  })
+  const [formError, setFormError] = useState("")
+  const [formSuccess, setFormSuccess] = useState("")
+
+  const canManage = can("institute_admin") || can("faculty") || user?.is_superuser
+
+  useEffect(() => {
+    let isMounted = true
+    Promise.all([
+      api.academics.getClasses(),
+      api.academics.getSubjects(),
+    ]).then(([classesData, subjectsData]) => {
+      if (!isMounted) return
+      if (Array.isArray(classesData)) {
+        setClasses(classesData)
+        if (classesData.length > 0 && !selectedCohortId) {
+          setSelectedCohortId(classesData[0].id)
+        }
+      }
+      if (Array.isArray(subjectsData)) {
+        setSubjects(subjectsData)
+      }
+    }).catch(() => {})
+
+    return () => { isMounted = false }
+  }, [tenant.id])
+
+  useEffect(() => {
+    if (!selectedCohortId) return
+    const matchedClass = classes.find(c => c.id === selectedCohortId)
+    if (matchedClass) {
+      const generated: TimetableSlot[] = [
+        {
+          id: `tt-1-${matchedClass.id}`,
+          dayOfWeek: "Monday",
+          startTime: "09:00",
+          endTime: "10:30",
+          courseName: matchedClass.course_name || matchedClass.name,
+          courseCode: matchedClass.course_code || "ACAD-101",
+          instructorName: "Assigned Faculty",
+          room: matchedClass.sections?.[0]?.name ? `Room ${matchedClass.sections[0].name}` : "Lecture Hall 1",
+          batchName: matchedClass.name,
+        },
+        {
+          id: `tt-2-${matchedClass.id}`,
+          dayOfWeek: "Wednesday",
+          startTime: "09:00",
+          endTime: "10:30",
+          courseName: matchedClass.course_name || matchedClass.name,
+          courseCode: matchedClass.course_code || "ACAD-101",
+          instructorName: "Assigned Faculty",
+          room: matchedClass.sections?.[0]?.name ? `Room ${matchedClass.sections[0].name}` : "Lecture Hall 1",
+          batchName: matchedClass.name,
+        },
+        {
+          id: `tt-3-${matchedClass.id}`,
+          dayOfWeek: "Thursday",
+          startTime: "11:00",
+          endTime: "12:30",
+          courseName: "Practical & Lab Session",
+          courseCode: "LAB-201",
+          instructorName: "Lab Instructor",
+          room: "Lab B",
+          batchName: matchedClass.name,
+        },
+        {
+          id: `tt-4-${matchedClass.id}`,
+          dayOfWeek: "Friday",
+          startTime: "14:00",
+          endTime: "15:30",
+          courseName: "Seminar & Tutorial",
+          courseCode: "SEM-301",
+          instructorName: "Lead Instructor",
+          room: "Seminar Room 2",
+          batchName: matchedClass.name,
+        }
+      ]
+      setTimetable(generated)
+    } else {
+      setTimetable([])
+    }
+  }, [selectedCohortId, classes])
+
+  const handleOpenAdd = () => {
+    setFormError("")
+    setFormSuccess("")
+    const matchedClass = classes.find(c => c.id === selectedCohortId)
+    setSlotForm({
+      dayOfWeek: "Monday",
+      startTime: "09:00",
+      endTime: "10:30",
+      courseName: subjects[0]?.name || matchedClass?.name || "Core Subject",
+      courseCode: subjects[0]?.code || "ACAD-101",
+      instructorName: "Faculty Member",
+      room: "Lecture Hall 1",
+    })
+    setIsAddModalOpen(true)
+  }
+
+  const handleAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!slotForm.courseName.trim()) {
+      setFormError("Course / Subject name is required.")
+      return
+    }
+
+    const newSlot: TimetableSlot = {
+      id: `slot-${Date.now()}`,
+      dayOfWeek: slotForm.dayOfWeek,
+      startTime: slotForm.startTime,
+      endTime: slotForm.endTime,
+      courseName: slotForm.courseName,
+      courseCode: slotForm.courseCode,
+      instructorName: slotForm.instructorName,
+      room: slotForm.room,
+      batchName: classes.find(c => c.id === selectedCohortId)?.name || "Cohort",
+    }
+
+    setTimetable(prev => [...prev, newSlot])
+    setFormSuccess("Period scheduled successfully!")
+    setTimeout(() => {
+      setIsAddModalOpen(false)
+      setFormSuccess("")
+    }, 800)
+  }
+
+  const handleOpenEdit = (slot: TimetableSlot) => {
+    setSelectedSlot(slot)
+    setSlotForm({
+      dayOfWeek: slot.dayOfWeek,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      courseName: slot.courseName,
+      courseCode: slot.courseCode,
+      instructorName: slot.instructorName,
+      room: slot.room,
+    })
+    setFormError("")
+    setFormSuccess("")
+    setIsEditModalOpen(true)
+  }
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedSlot) return
+
+    setTimetable(prev => prev.map(s => s.id === selectedSlot.id ? {
+      ...s,
+      dayOfWeek: slotForm.dayOfWeek,
+      startTime: slotForm.startTime,
+      endTime: slotForm.endTime,
+      courseName: slotForm.courseName,
+      courseCode: slotForm.courseCode,
+      instructorName: slotForm.instructorName,
+      room: slotForm.room,
+    } : s))
+
+    setFormSuccess("Timetable slot updated!")
+    setTimeout(() => {
+      setIsEditModalOpen(false)
+      setSelectedSlot(null)
+      setFormSuccess("")
+    }, 800)
+  }
+
+  const handleDeleteSlot = (id: string) => {
+    if (window.confirm("Are you sure you want to remove this timetable slot?")) {
+      setTimetable(prev => prev.filter(s => s.id !== id))
+    }
+  }
 
   const handlePrint = () => {
     window.print()
@@ -43,18 +247,24 @@ export const TimetablePage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="w-48">
-            <Select
-              value={selectedCohort}
-              onChange={(e) => setSelectedCohort(e.target.value)}
-              options={[
-                { value: "Cohort A - Year 3", label: "Cohort A - Year 3" },
-                { value: "Cohort B - Year 2", label: "Cohort B - Year 2" },
-                { value: "Cohort C - Year 1", label: "Cohort C - Year 1" }
-              ]}
-            />
-          </div>
+        <div className="flex flex-wrap items-center gap-2.5">
+          {classes.length > 0 && (
+            <div className="w-56">
+              <Select
+                value={selectedCohortId}
+                onChange={(e) => setSelectedCohortId(e.target.value)}
+                options={classes.map(c => ({ value: c.id, label: c.name }))}
+              />
+            </div>
+          )}
+          {canManage && (
+            <Button
+              onClick={handleOpenAdd}
+              leftIcon={<Plus className="w-4 h-4" />}
+            >
+              Add Period Slot
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -92,39 +302,57 @@ export const TimetablePage: React.FC = () => {
                   <span>{slotRange}</span>
                 </div>
 
-                {/* Day Cells */}
+                {/* Days Columns */}
                 {DAYS.map((day) => {
-                  const matched = timetable.find(
-                    (item) => item.dayOfWeek === day && item.startTime === slotStart
+                  const matchingSlots = timetable.filter(
+                    (s) => s.dayOfWeek === day && s.startTime.startsWith(slotStart.slice(0, 2))
                   )
 
                   return (
                     <div
                       key={day}
-                      className="p-2 border-r last:border-r-0 border-slate-100 dark:border-slate-800/70 flex flex-col justify-center"
+                      className="p-2 border-r last:border-r-0 border-slate-100 dark:border-slate-800/70 flex flex-col gap-1.5"
                     >
-                      {matched ? (
-                        <div className="p-2.5 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-xs space-y-1 hover:shadow-xs transition-shadow">
-                          <div className="flex items-center justify-between">
-                            <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300 text-[10px]">
-                              {matched.courseCode}
+                      {matchingSlots.map((slot) => (
+                        <div
+                          key={slot.id}
+                          className="p-2.5 rounded-xl border border-indigo-100 bg-indigo-50/70 dark:border-indigo-900/60 dark:bg-indigo-950/40 text-xs transition-all hover:shadow-xs group relative"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-mono text-[10px] font-bold text-indigo-700 dark:text-indigo-300">
+                              {slot.courseCode}
                             </span>
-                            <span className="text-[10px] text-indigo-500 font-semibold">
-                              {matched.room}
-                            </span>
+                            {canManage && (
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                <button
+                                  onClick={() => handleOpenEdit(slot)}
+                                  className="p-1 rounded text-slate-500 hover:text-indigo-600 hover:bg-white dark:hover:bg-slate-800"
+                                  title="Edit Slot"
+                                >
+                                  <Edit3 className="w-3 h-3" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteSlot(slot.id)}
+                                  className="p-1 rounded text-slate-500 hover:text-rose-600 hover:bg-white dark:hover:bg-slate-800"
+                                  title="Delete Slot"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )}
                           </div>
-                          <p className="font-semibold text-slate-800 dark:text-slate-100 truncate text-[11px]">
-                            {matched.courseName}
+                          <p className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">
+                            {slot.courseName}
                           </p>
-                          <p className="text-[10px] text-slate-500 truncate">
-                            {matched.instructorName}
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                            <MapPin className="w-3 h-3 text-slate-400" />
+                            <span>{slot.room}</span>
+                          </div>
+                          <p className="text-[10px] text-indigo-600 dark:text-indigo-400 mt-0.5 font-medium truncate">
+                            {slot.instructorName}
                           </p>
                         </div>
-                      ) : (
-                        <div className="h-full w-full rounded-lg border border-dashed border-slate-100 dark:border-slate-800/60 flex items-center justify-center text-[10px] text-slate-300 dark:text-slate-600">
-                          Free Slot
-                        </div>
-                      )}
+                      ))}
                     </div>
                   )
                 })}
@@ -133,6 +361,164 @@ export const TimetablePage: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Add Slot Modal */}
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Schedule Period Slot"
+        size="md"
+      >
+        <form onSubmit={handleAddSubmit} className="space-y-4">
+          {formError && (
+            <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 text-rose-600 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+          {formSuccess && (
+            <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 text-emerald-600 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
+              <span>{formSuccess}</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Day of Week"
+              value={slotForm.dayOfWeek}
+              onChange={(e) => setSlotForm({ ...slotForm, dayOfWeek: e.target.value as any })}
+              options={DAYS.map(d => ({ value: d, label: d }))}
+            />
+            <Select
+              label="Time Range"
+              value={`${slotForm.startTime} - ${slotForm.endTime}`}
+              onChange={(e) => {
+                const [start, end] = e.target.value.split(" - ")
+                setSlotForm({ ...slotForm, startTime: start, endTime: end })
+              }}
+              options={TIME_SLOTS.map(t => ({ value: t, label: t }))}
+            />
+          </div>
+
+          <Input
+            label="Subject / Course Title *"
+            required
+            value={slotForm.courseName}
+            onChange={(e) => setSlotForm({ ...slotForm, courseName: e.target.value })}
+            placeholder="e.g. Advanced Data Structures"
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Course Code"
+              value={slotForm.courseCode}
+              onChange={(e) => setSlotForm({ ...slotForm, courseCode: e.target.value })}
+              placeholder="e.g. CS-201"
+            />
+            <Input
+              label="Assigned Room / Venue"
+              value={slotForm.room}
+              onChange={(e) => setSlotForm({ ...slotForm, room: e.target.value })}
+              placeholder="e.g. Lecture Hall 3"
+            />
+          </div>
+
+          <Input
+            label="Educator / Instructor Name"
+            value={slotForm.instructorName}
+            onChange={(e) => setSlotForm({ ...slotForm, instructorName: e.target.value })}
+            placeholder="e.g. Dr. Vance"
+          />
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">
+              Schedule Period
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Slot Modal */}
+      {isEditModalOpen && selectedSlot && (
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          title="Edit Period Slot"
+          size="md"
+        >
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            {formError && (
+              <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 text-rose-600 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
+            {formSuccess && (
+              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 text-emerald-600 text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
+                <span>{formSuccess}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <Select
+                label="Day of Week"
+                value={slotForm.dayOfWeek}
+                onChange={(e) => setSlotForm({ ...slotForm, dayOfWeek: e.target.value as any })}
+                options={DAYS.map(d => ({ value: d, label: d }))}
+              />
+              <Select
+                label="Time Range"
+                value={`${slotForm.startTime} - ${slotForm.endTime}`}
+                onChange={(e) => {
+                  const [start, end] = e.target.value.split(" - ")
+                  setSlotForm({ ...slotForm, startTime: start, endTime: end })
+                }}
+                options={TIME_SLOTS.map(t => ({ value: t, label: t }))}
+              />
+            </div>
+
+            <Input
+              label="Subject / Course Title *"
+              required
+              value={slotForm.courseName}
+              onChange={(e) => setSlotForm({ ...slotForm, courseName: e.target.value })}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Course Code"
+                value={slotForm.courseCode}
+                onChange={(e) => setSlotForm({ ...slotForm, courseCode: e.target.value })}
+              />
+              <Input
+                label="Assigned Room"
+                value={slotForm.room}
+                onChange={(e) => setSlotForm({ ...slotForm, room: e.target.value })}
+              />
+            </div>
+
+            <Input
+              label="Instructor Name"
+              value={slotForm.instructorName}
+              onChange={(e) => setSlotForm({ ...slotForm, instructorName: e.target.value })}
+            />
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                Save Changes
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   )
 }
