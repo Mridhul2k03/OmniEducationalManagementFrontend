@@ -255,6 +255,18 @@ class ApiClient {
       return res
     },
 
+    check: async (): Promise<{ authenticated: boolean; data?: any }> => {
+      try {
+        const res = await this.request<any>("/auth/check/", { method: "GET" }, true)
+        return {
+          authenticated: !!res?.authenticated,
+          data: res?.data,
+        }
+      } catch {
+        return { authenticated: false }
+      }
+    },
+
     me: async (): Promise<MeResponse["data"]> => {
       const res = await this.request<MeResponse>("/auth/me/")
       return res.data
