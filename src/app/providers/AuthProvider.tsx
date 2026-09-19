@@ -7,10 +7,11 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password?: string) => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
   can: (permission: string) => boolean
   availableRoles: { role: Role; label: string; description: string }[]
   backendConnected: boolean
+  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -27,52 +28,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [backendConnected, setBackendConnected] = useState<boolean>(false)
 
-  // On mount, verify backend connection and restore session from valid JWT
-  useEffect(() => {
-    let isMounted = true
+  // Verify cookie-based session directly with backend
+  const checkAndRestoreSession = async () => {
+    try {
+      const health = await api.health.check()
+      setBackendConnected(health.isConnected)
 
-    const checkAndRestoreSession = async () => {
-      try {
-        const health = await api.health.check()
-        if (!isMounted) return
-        setBackendConnected(health.isConnected)
+      // Check login status via HttpOnly cookie
+      let checkResult = await api.auth.check()
 
-        const token = api.getAccessToken()
-        if (token) {
-          try {
-            const meData = await api.auth.me()
-            if (!isMounted) return
-            if (meData?.user) {
-              const roleCode = meData.user.is_superuser
-                ? "super_admin"
-                : (meData.memberships?.[0]?.roles?.[0]?.code as Role) || "institute_admin"
-
-              const liveUser: User = {
-                id: meData.user.id,
-                name: meData.user.full_name || meData.user.email,
-                email: meData.user.email,
-                role: roleCode,
-                tenantId: meData.active_tenant?.id || "oxford-crest",
-                permissions: meData.active_permissions?.length ? meData.active_permissions : ["*"],
-                is_superuser: !!meData.user.is_superuser,
-                is_staff: !!meData.user.is_staff,
-              }
-              setUser(liveUser)
-            }
-          } catch {
-            api.clearAuth()
-            setUser(null)
-          }
+      // If initial check fails, attempt cookie refresh once
+      if (!checkResult.authenticated) {
+        const refreshed = await api.refreshToken()
+        if (refreshed) {
+          checkResult = await api.auth.check()
         }
-      } catch {
-        // Backend offline
-      } finally {
-        if (isMounted) setIsLoading(false)
       }
-    }
 
+      if (checkResult.authenticated && checkResult.data?.user) {
+        const authData = checkResult.data
+        const roleCode = authData.user.is_superuser
+          ? "super_admin"
+          : (authData.role as Role) || "institute_admin"
+
+        const liveUser: User = {
+          id: authData.user.id,
+          name: authData.user.full_name || authData.user.email,
+          email: authData.user.email,
+          role: roleCode,
+          tenantId: authData.active_tenant?.id || "oxford-crest",
+          permissions: authData.permissions?.length ? authData.permissions : ["*"],
+          is_superuser: !!authData.user.is_superuser,
+          is_staff: !!authData.user.is_staff,
+        }
+
+        if (authData.active_tenant?.id) {
+          api.setActiveTenantId(authData.active_tenant.id)
+        }
+        setUser(liveUser)
+      } else {
+        setUser(null)
+      }
+    } catch {
+      setUser(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
     checkAndRestoreSession()
-    return () => { isMounted = false }
   }, [])
 
   const login = async (email: string, password: string = "Password123!"): Promise<boolean> => {
@@ -80,50 +85,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const loginRes = await api.auth.login(email, password)
-      if (loginRes?.access) {
+      if (loginRes?.access || loginRes?.user) {
         setBackendConnected(true)
-        
-        let perms = ["*"]
-        let targetRole: Role = loginRes.user?.is_superuser ? "super_admin" : "institute_admin"
-        let isSuper = !!loginRes.user?.is_superuser
-        let isStaff = !!loginRes.user?.is_staff
-        let assignedTenantId = loginRes.active_tenant?.id || "oxford-crest"
-        
-        try {
-          const meData = await api.auth.me()
-          if (meData?.active_permissions?.length) {
-            perms = meData.active_permissions
+
+        // Verify session and get authoritative profile and role
+        const checkResult = await api.auth.check()
+        if (checkResult.authenticated && checkResult.data?.user) {
+          const authData = checkResult.data
+          const roleCode = authData.user.is_superuser
+            ? "super_admin"
+            : (authData.role as Role) || "institute_admin"
+
+          const authenticatedUser: User = {
+            id: authData.user.id,
+            name: authData.user.full_name || authData.user.email,
+            email: authData.user.email,
+            role: roleCode,
+            tenantId: authData.active_tenant?.id || loginRes.active_tenant?.id || "oxford-crest",
+            permissions: authData.permissions?.length ? authData.permissions : ["*"],
+            is_superuser: !!authData.user.is_superuser,
+            is_staff: !!authData.user.is_staff,
           }
-          if (meData?.user?.is_superuser) {
-            isSuper = true
-            targetRole = "super_admin"
+
+          if (authData.active_tenant?.id) {
+            api.setActiveTenantId(authData.active_tenant.id)
           }
-          if (meData?.user?.is_staff) {
-            isStaff = true
-          }
-          if (meData?.memberships?.[0]?.roles?.[0]?.code && !isSuper) {
-            targetRole = meData.memberships[0].roles[0].code as Role
-          }
-          if (meData?.active_tenant?.id) {
-            assignedTenantId = meData.active_tenant.id
-          }
-        } catch {
-          // meData fetch fallback
+          setUser(authenticatedUser)
+          return true
         }
 
-        const authenticatedUser: User = {
+        // Fallback with login response data
+        const fallbackRole = loginRes.user?.is_superuser ? "super_admin" : "institute_admin"
+        const fallbackUser: User = {
           id: loginRes.user.id,
           name: loginRes.user.full_name || loginRes.user.email,
           email: loginRes.user.email,
-          role: targetRole,
-          tenantId: assignedTenantId,
-          permissions: perms,
-          is_superuser: isSuper,
-          is_staff: isStaff,
+          role: fallbackRole as Role,
+          tenantId: loginRes.active_tenant?.id || "oxford-crest",
+          permissions: ["*"],
+          is_superuser: !!loginRes.user?.is_superuser,
+          is_staff: !!loginRes.user?.is_staff,
         }
-
-        api.setActiveTenantId(assignedTenantId)
-        setUser(authenticatedUser)
+        if (loginRes.active_tenant?.id) {
+          api.setActiveTenantId(loginRes.active_tenant.id)
+        }
+        setUser(fallbackUser)
         return true
       }
       return false
@@ -132,8 +138,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const logout = () => {
-    api.auth.logout()
+  const logout = async () => {
+    try {
+      await api.auth.logout()
+    } catch {
+      // Clean local state
+    }
     setUser(null)
   }
 
@@ -155,6 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can,
         availableRoles: AVAILABLE_ROLES,
         backendConnected,
+        refreshSession: checkAndRestoreSession,
       }}
     >
       {children}

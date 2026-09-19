@@ -190,8 +190,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
             </div>
 
             <button
-              onClick={() => {
-                logout()
+              onClick={async () => {
+                await logout()
                 navigate("/auth/login")
               }}
               title="Sign Out"
