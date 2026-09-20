@@ -463,12 +463,13 @@ export const StaffPage: React.FC = () => {
                 onChange={(e) => setEditForm({ ...editForm, designation: e.target.value })}
               />
               <Select
-                label="Status"
+                label="Account / Employment Status"
                 value={editForm.status}
                 onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                 options={[
                   { value: "active", label: "Active" },
                   { value: "on_leave", label: "On Leave" },
+                  { value: "terminated", label: "Deactivated / Terminated" },
                 ]}
               />
             </div>

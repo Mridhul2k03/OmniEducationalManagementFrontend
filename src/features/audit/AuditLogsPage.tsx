@@ -29,7 +29,7 @@ import { Modal } from "../../components/ui/Modal"
 
 export const AuditLogsPage: React.FC = () => {
   const { tenant, t } = useTenant()
-  const { can } = useAuth()
+  const { user, can } = useAuth()
   const [logs, setLogs] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [searchQuery, setSearchQuery] = useState<string>("")
@@ -39,6 +39,22 @@ export const AuditLogsPage: React.FC = () => {
   // Detail Modal
   const [selectedLog, setSelectedLog] = useState<any | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false)
+
+  const isAuthorized = user?.is_superuser || user?.role === "institute_admin" || user?.role === "super_admin" || can("institute_admin")
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 mb-4">
+          <ShieldAlert className="w-10 h-10" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Security Logs Restricted</h2>
+        <p className="mt-1.5 text-xs text-slate-500 max-w-sm">
+          Institutional security & compliance audit logs are reserved for administrative accounts.
+        </p>
+      </div>
+    )
+  }
 
   const fetchLogs = async () => {
     setIsLoading(true)

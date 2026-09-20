@@ -97,13 +97,13 @@ export const AdminSystemPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-1.5">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 mb-1.5">
             <Activity className="w-3.5 h-3.5" /> Telemetry & Infrastructure Health
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white">
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
             System Diagnostics & API Latency Prober
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Real-time backend performance metrics, REST endpoint response latency, and subsystem connectivity status.
           </p>
         </div>
@@ -123,70 +123,70 @@ export const AdminSystemPage: React.FC = () => {
 
       {/* Subsystem Health Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>DRF Backend API</span>
-            <Server className="w-4 h-4 text-indigo-400" />
+            <Server className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
           </div>
           <div className="flex items-center gap-2 mt-2">
             <span
               className={`w-2.5 h-2.5 rounded-full ${
-                overallHealth === "healthy" ? "bg-emerald-400 animate-pulse" : "bg-rose-400"
+                overallHealth === "healthy" ? "bg-emerald-500 dark:bg-emerald-400 animate-pulse" : "bg-rose-500 dark:bg-rose-400"
               }`}
             />
-            <p className="text-xl font-black text-white">
+            <p className="text-xl font-black text-slate-900 dark:text-white">
               {overallHealth === "healthy" ? "OPERATIONAL" : "DEGRADED"}
             </p>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">127.0.0.1:8000/api/v1/</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">127.0.0.1:8000/api/v1/</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Average Latency</span>
-            <Zap className="w-4 h-4 text-emerald-400" />
+            <Zap className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
           </div>
-          <p className="text-2xl font-black text-emerald-400 mt-2">{averageLatency} ms</p>
-          <p className="text-[11px] text-slate-400 mt-1">Round-trip execution</p>
+          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{averageLatency} ms</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Round-trip execution</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Database Storage</span>
-            <Database className="w-4 h-4 text-amber-400" />
+            <Database className="w-4 h-4 text-amber-500 dark:text-amber-400" />
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-            <p className="text-xl font-black text-white">CONNECTED</p>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+            <p className="text-xl font-black text-slate-900 dark:text-white">CONNECTED</p>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">SQLite / Multi-Tenant Schema</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">SQLite / Multi-Tenant Schema</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>JWT Security Subsystem</span>
-            <ShieldCheck className="w-4 h-4 text-violet-400" />
+            <ShieldCheck className="w-4 h-4 text-violet-500 dark:text-violet-400" />
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-violet-400" />
-            <p className="text-xl font-black text-violet-300">ACTIVE</p>
+            <span className="w-2.5 h-2.5 rounded-full bg-violet-500 dark:bg-violet-400" />
+            <p className="text-xl font-black text-violet-700 dark:text-violet-300">ACTIVE</p>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Bearer Token Validation</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Bearer Token Validation</p>
         </div>
       </div>
 
       {/* Live Endpoint Latency Prober Table */}
-      <div className="overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 shadow-xl p-5 space-y-4">
+      <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Radio className="w-4 h-4 text-indigo-400" /> REST API Endpoint Prober
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Radio className="w-4 h-4 text-indigo-500 dark:text-indigo-400" /> REST API Endpoint Prober
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Diagnostic probes executing directly against the live Django REST Framework backend.
             </p>
           </div>
-          <span className="text-[11px] text-slate-400 font-mono">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
             Last probe: {lastProbedAt.toLocaleTimeString()}
           </span>
         </div>
@@ -194,7 +194,7 @@ export const AdminSystemPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 <th className="py-3 px-4">Service Endpoint</th>
                 <th className="py-3 px-4">Method</th>
                 <th className="py-3 px-4">Path</th>
@@ -203,24 +203,24 @@ export const AdminSystemPage: React.FC = () => {
                 <th className="py-3 px-4 text-right">Result</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs font-mono">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs font-mono">
               {probes.map((p, idx) => (
-                <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="py-3 px-4 font-sans font-bold text-slate-200">
+                <tr key={idx} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                  <td className="py-3 px-4 font-sans font-bold text-slate-800 dark:text-slate-200">
                     {p.name}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 dark:border-indigo-500/30">
                       {p.method}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-slate-400 text-[11px]">
+                  <td className="py-3 px-4 text-slate-500 dark:text-slate-400 text-[11px]">
                     {p.path}
                   </td>
                   <td className="py-3 px-4">
                     <span
                       className={`font-bold ${
-                        p.status === 200 ? "text-emerald-400" : "text-rose-400"
+                        p.status === 200 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                       }`}
                     >
                       {p.status || "—"} {p.status === 200 ? "OK" : ""}
@@ -230,10 +230,10 @@ export const AdminSystemPage: React.FC = () => {
                     <span
                       className={`font-semibold ${
                         (p.latencyMs || 0) < 50
-                          ? "text-emerald-400"
+                          ? "text-emerald-600 dark:text-emerald-400"
                           : (p.latencyMs || 0) < 150
-                          ? "text-amber-400"
-                          : "text-rose-400"
+                          ? "text-amber-600 dark:text-amber-400"
+                          : "text-rose-600 dark:text-rose-400"
                       }`}
                     >
                       {p.latencyMs !== undefined ? `${p.latencyMs} ms` : "—"}
@@ -241,11 +241,11 @@ export const AdminSystemPage: React.FC = () => {
                   </td>
                   <td className="py-3 px-4 text-right">
                     {p.success ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
                         <CheckCircle2 className="w-3 h-3" /> PASS
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20">
                         <XCircle className="w-3 h-3" /> FAIL
                       </span>
                     )}
@@ -259,52 +259,52 @@ export const AdminSystemPage: React.FC = () => {
 
       {/* Environment & Architecture Telemetry */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-          <h3 className="font-bold text-sm text-white flex items-center gap-2">
-            <Cpu className="w-4 h-4 text-indigo-400" /> Platform Architecture & Stack
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-xs">
+          <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+            <Cpu className="w-4 h-4 text-indigo-500 dark:text-indigo-400" /> Platform Architecture & Stack
           </h3>
-          <div className="space-y-2 text-xs divide-y divide-slate-800/80">
+          <div className="space-y-2 text-xs divide-y divide-slate-100 dark:divide-slate-800/80">
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-400">Backend Framework</span>
-              <span className="font-bold text-slate-200">Django 5.1.7 + DRF 3.15.2</span>
+              <span className="text-slate-500 dark:text-slate-400">Backend Framework</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">Django 5.1.7 + DRF 3.15.2</span>
             </div>
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-400">Frontend Client</span>
-              <span className="font-bold text-slate-200">React 18 + Vite + Tailwind CSS</span>
+              <span className="text-slate-500 dark:text-slate-400">Frontend Client</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">React 18 + Vite + Tailwind CSS</span>
             </div>
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-400">Authentication Protocol</span>
-              <span className="font-bold text-slate-200">djangorestframework-simplejwt (JWT)</span>
+              <span className="text-slate-500 dark:text-slate-400">Authentication Protocol</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">djangorestframework-simplejwt (JWT)</span>
             </div>
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-400">API Documentation</span>
-              <span className="font-bold text-indigo-400 flex items-center gap-1">
+              <span className="text-slate-500 dark:text-slate-400">API Documentation</span>
+              <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
                 drf-spectacular (OpenAPI 3.0) <ExternalLink className="w-3 h-3" />
               </span>
             </div>
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-          <h3 className="font-bold text-sm text-white flex items-center gap-2">
-            <HardDrive className="w-4 h-4 text-emerald-400" /> Operational Configuration
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-xs">
+          <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+            <HardDrive className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> Operational Configuration
           </h3>
-          <div className="space-y-2 text-xs divide-y divide-slate-800/80">
+          <div className="space-y-2 text-xs divide-y divide-slate-100 dark:divide-slate-800/80">
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-400">Server Timezone</span>
-              <span className="font-mono text-slate-200">UTC (Coordinated Universal Time)</span>
+              <span className="text-slate-500 dark:text-slate-400">Server Timezone</span>
+              <span className="font-mono text-slate-800 dark:text-slate-200">UTC (Coordinated Universal Time)</span>
             </div>
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-400">Multi-Tenancy Mode</span>
-              <span className="font-bold text-slate-200">Header-driven & URL-scoped RBAC</span>
+              <span className="text-slate-500 dark:text-slate-400">Multi-Tenancy Mode</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">Header-driven & URL-scoped RBAC</span>
             </div>
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-400">API Gateway Base URL</span>
-              <span className="font-mono text-slate-200">http://127.0.0.1:8000/api/v1/</span>
+              <span className="text-slate-500 dark:text-slate-400">API Gateway Base URL</span>
+              <span className="font-mono text-slate-800 dark:text-slate-200">http://127.0.0.1:8000/api/v1/</span>
             </div>
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-400">CORS Policy</span>
-              <span className="font-bold text-emerald-400">Allow Credentials + Local Origins</span>
+              <span className="text-slate-500 dark:text-slate-400">CORS Policy</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">Allow Credentials + Local Origins</span>
             </div>
           </div>
         </div>

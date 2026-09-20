@@ -81,6 +81,12 @@ export class BaseApiClient {
       headers.set("X-Tenant-ID", tenantId.trim())
     }
 
+    // Attach Authorization Bearer token as dual-layer defense alongside HttpOnly cookies
+    const token = this.getAccessToken()
+    if (token && !headers.has("Authorization")) {
+      headers.set("Authorization", `Bearer ${token}`)
+    }
+
     try {
       const response = await fetch(url, {
         ...options,
@@ -119,23 +125,61 @@ export class BaseApiClient {
   }
 
   /**
-   * Refreshes access token via HttpOnly refresh cookie.
+   * Refreshes access token via HttpOnly refresh cookie and bearer fallback.
    */
   public async refreshToken(): Promise<boolean> {
     try {
+      const storedRefresh = this.getRefreshToken()
+      const body = storedRefresh ? JSON.stringify({ refresh: storedRefresh }) : JSON.stringify({})
       const res = await fetch(`${this.baseURL}/auth/refresh/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({}),
+        body,
       })
 
       if (res.ok) {
+        const data = await res.json()
+        if (data?.access) {
+          this.setTokens(data.access, data.refresh)
+        }
         return true
       }
       return false
     } catch {
       return false
     }
+  }
+
+  public async get<T = any>(endpoint: string, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: "GET" })
+  }
+
+  public async post<T = any>(endpoint: string, body?: any, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "POST",
+      body: body ? JSON.stringify(body) : undefined,
+    })
+  }
+
+  public async patch<T = any>(endpoint: string, body?: any, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "PATCH",
+      body: body ? JSON.stringify(body) : undefined,
+    })
+  }
+
+  public async put<T = any>(endpoint: string, body?: any, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "PUT",
+      body: body ? JSON.stringify(body) : undefined,
+    })
+  }
+
+  public async delete<T = any>(endpoint: string, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: "DELETE" })
   }
 }

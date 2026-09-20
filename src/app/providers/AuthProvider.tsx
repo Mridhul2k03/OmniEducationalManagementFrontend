@@ -6,6 +6,8 @@ interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  isInstitutionSuperAdmin: boolean
+  isSuperAdmin: boolean
   login: (email: string, password?: string) => Promise<boolean>
   logout: () => Promise<void>
   can: (permission: string) => boolean
@@ -17,7 +19,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const AVAILABLE_ROLES: { role: Role; label: string; description: string }[] = [
-  { role: "institute_admin", label: "Institution Admin", description: "Full institutional management & settings control" },
+  { role: "institution_super_admin", label: "Institution Super Admin", description: "Complete institutional control, user & admin management" },
+  { role: "institution_admin", label: "Institution Admin (Delegated)", description: "Delegated management of staff, learners, operations" },
   { role: "faculty", label: "Faculty / Instructor", description: "Classes, attendance, marks, assignments" },
   { role: "student", label: "Student / Learner", description: "View timetable, grades, invoices, assignments" },
   { role: "accountant", label: "Accountant / Bursar", description: "Invoices, fee collection, reconciliation" }
@@ -47,9 +50,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (checkResult.authenticated && checkResult.data?.user) {
         const authData = checkResult.data
+        const isInstSuper = Boolean(authData.is_institution_superadmin || authData.user.is_superuser || authData.role === "institution_super_admin" || authData.role === "super_admin")
         const roleCode = authData.user.is_superuser
           ? "super_admin"
-          : (authData.role as Role) || "institute_admin"
+          : (authData.role as Role) || (isInstSuper ? "institution_super_admin" : "faculty")
 
         const liveUser: User = {
           id: authData.user.id,
@@ -57,9 +61,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: authData.user.email,
           role: roleCode,
           tenantId: authData.active_tenant?.id || "oxford-crest",
-          permissions: authData.permissions?.length ? authData.permissions : ["*"],
+          permissions: isInstSuper ? ["*"] : (authData.permissions?.length ? authData.permissions : []),
           is_superuser: !!authData.user.is_superuser,
           is_staff: !!authData.user.is_staff,
+          is_institution_superadmin: isInstSuper,
         }
 
         if (authData.active_tenant?.id) {
@@ -92,9 +97,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const checkResult = await api.auth.check()
         if (checkResult.authenticated && checkResult.data?.user) {
           const authData = checkResult.data
+          const isInstSuper = Boolean(authData.is_institution_superadmin || authData.user.is_superuser || authData.role === "institution_super_admin" || authData.role === "super_admin")
           const roleCode = authData.user.is_superuser
             ? "super_admin"
-            : (authData.role as Role) || "institute_admin"
+            : (authData.role as Role) || (isInstSuper ? "institution_super_admin" : "faculty")
 
           const authenticatedUser: User = {
             id: authData.user.id,
@@ -102,9 +108,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: authData.user.email,
             role: roleCode,
             tenantId: authData.active_tenant?.id || loginRes.active_tenant?.id || "oxford-crest",
-            permissions: authData.permissions?.length ? authData.permissions : ["*"],
+            permissions: isInstSuper ? ["*"] : (authData.permissions?.length ? authData.permissions : []),
             is_superuser: !!authData.user.is_superuser,
             is_staff: !!authData.user.is_staff,
+            is_institution_superadmin: isInstSuper,
           }
 
           if (authData.active_tenant?.id) {
@@ -115,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         // Fallback with login response data
-        const fallbackRole = loginRes.user?.is_superuser ? "super_admin" : "institute_admin"
+        const fallbackRole = loginRes.user?.is_superuser ? "super_admin" : "institution_super_admin"
         const fallbackUser: User = {
           id: loginRes.user.id,
           name: loginRes.user.full_name || loginRes.user.email,
@@ -125,6 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           permissions: ["*"],
           is_superuser: !!loginRes.user?.is_superuser,
           is_staff: !!loginRes.user?.is_staff,
+          is_institution_superadmin: true,
         }
         if (loginRes.active_tenant?.id) {
           api.setActiveTenantId(loginRes.active_tenant.id)
@@ -147,9 +155,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null)
   }
 
+  const isInstSuper = Boolean(
+    user?.is_superuser ||
+    user?.is_institution_superadmin ||
+    user?.role === "institution_super_admin" ||
+    user?.role === "super_admin"
+  )
+
+  const isSuper = Boolean(user?.is_superuser)
+
   const can = (permission: string): boolean => {
     if (!user) return false
+    if (isInstSuper) return true
     if (user.permissions.includes("*")) return true
+    if (permission === "institute_admin" || permission === "institution_admin") {
+      return isInstSuper || user.role === "institution_admin" || user.role === "institute_admin"
+    }
     if (user.permissions.includes(permission)) return true
     return false
   }
@@ -160,6 +181,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isAuthenticated: !!user,
         isLoading,
+        isInstitutionSuperAdmin: isInstSuper,
+        isSuperAdmin: isSuper,
         login,
         logout,
         can,

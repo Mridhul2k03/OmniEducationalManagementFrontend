@@ -37,6 +37,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
     { label: "Examinations, Marks & Report Cards", path: "/app/examinations", icon: FileSpreadsheet, category: "Operations" },
     { label: "Finance, Fees & Invoices", path: "/app/finance", icon: Wallet, category: "Finance" },
     { label: "Bulletins & Campus Announcements", path: "/app/communications", icon: Megaphone, category: "Communication" },
+    { label: "User Management & Staff Accounts", path: "/app/users", icon: Users, category: "Administration" },
     { label: "Tenant Settings & RBAC Permissions", path: "/app/settings", icon: Settings, category: "Administration" },
   ]
 
