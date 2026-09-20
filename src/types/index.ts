@@ -45,6 +45,8 @@ export interface Tenant {
 }
 
 export type Role = 
+  | 'institution_super_admin'
+  | 'institution_admin'
   | 'institute_admin' 
   | 'faculty' 
   | 'student' 
@@ -65,6 +67,51 @@ export interface User {
   permissions: string[]
   is_superuser?: boolean
   is_staff?: boolean
+  is_institution_superadmin?: boolean
+}
+
+export interface InstitutionUser {
+  id: string
+  email: string
+  first_name: string
+  last_name: string
+  full_name: string
+  phone_number: string
+  avatar_url: string
+  is_active: boolean
+  membership_id: string
+  status: 'active' | 'invited' | 'suspended' | 'inactive'
+  joined_at: string
+  is_default: boolean
+  roles: Array<{ id: string; code: string; name: string }>
+  primary_role: { code: string; name: string }
+  permissions: string[]
+  is_institution_superadmin: boolean
+  staff_profile?: {
+    id: string
+    employee_id: string
+    designation: string
+    department?: string | null
+    employment_type: string
+    status: string
+  } | null
+}
+
+export interface RoleDefinition {
+  id: string
+  code: string
+  name: string
+  description: string
+  is_system_role: boolean
+  permissions: Array<{ id: string; code: string; name: string; module: string; description: string }>
+}
+
+export interface PermissionDefinition {
+  id: string
+  code: string
+  name: string
+  module: string
+  description: string
 }
 
 export type StudentStatus = 'active' | 'graduated' | 'suspended' | 'transferred'

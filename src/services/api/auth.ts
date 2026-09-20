@@ -10,6 +10,10 @@ export class AuthService {
       body: JSON.stringify({ email, password }),
     }, false)
 
+    if (res?.access) {
+      this.client.setTokens(res.access, res.refresh)
+    }
+
     if (res.active_tenant?.id) {
       this.client.setActiveTenantId(res.active_tenant.id)
     }

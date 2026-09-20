@@ -16,7 +16,8 @@ import {
   LogOut,
   ChevronRight,
   ShieldAlert,
-  ScrollText
+  ScrollText,
+  UserCheck
 } from "lucide-react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
@@ -29,7 +30,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile }) => {
   const { tenant, t } = useTenant()
-  const { user, logout } = useAuth()
+  const { user, logout, can } = useAuth()
   const navigate = useNavigate()
 
   const navGroups = [
@@ -67,6 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
     {
       group: "Administration",
       items: [
+        { label: "User Management", path: "/app/users", icon: UserCheck, permission: "institute_admin" },
         { label: "Tenant & RBAC Settings", path: "/app/settings", icon: Settings, permission: "institute_admin" },
         { label: "Security & Audit Logs", path: "/app/audit-logs", icon: ScrollText, permission: "institute_admin" }
       ]
@@ -119,39 +121,50 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           className="flex-1 overflow-y-auto px-3 py-4 space-y-5 no-scrollbar"
         >
-          {navGroups.map((grp) => (
-            <div key={grp.group}>
-              <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
-                {grp.group}
-              </p>
-              <div className="space-y-1">
-                {grp.items.map((item) => {
-                  const Icon = item.icon
-                  return (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      onClick={onCloseMobile}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group",
-                          isActive
-                            ? "bg-indigo-50 text-indigo-700 font-semibold dark:bg-indigo-950/50 dark:text-indigo-300"
-                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
-                        )
-                      }
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className="w-4 h-4 transition-transform group-hover:scale-110" />
-                        <span>{item.label}</span>
-                      </div>
-                      <ChevronRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
-                    </NavLink>
-                  )
-                })}
+          {navGroups
+            .map((grp) => ({
+              ...grp,
+              items: grp.items.filter((item) => {
+                if (item.permission === "view:all") return true
+                if (item.permission === "view:finance") return can("fees.view") || can("institute_admin") || user?.role === "accountant"
+                if (item.permission === "institute_admin") return can("institute_admin") || can("users.manage_roles") || can("tenant.manage_settings")
+                return can(item.permission)
+              }),
+            }))
+            .filter((grp) => grp.items.length > 0)
+            .map((grp) => (
+              <div key={grp.group}>
+                <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
+                  {grp.group}
+                </p>
+                <div className="space-y-1">
+                  {grp.items.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        onClick={onCloseMobile}
+                        className={({ isActive }) =>
+                          cn(
+                            "flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group",
+                            isActive
+                              ? "bg-indigo-50 text-indigo-700 font-semibold dark:bg-indigo-950/50 dark:text-indigo-300"
+                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
+                          )
+                        }
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Icon className="w-4 h-4 transition-transform group-hover:scale-110" />
+                          <span>{item.label}</span>
+                        </div>
+                        <ChevronRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                      </NavLink>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
 
         {/* User Profile Footer */}

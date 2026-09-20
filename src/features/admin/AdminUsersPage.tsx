@@ -28,8 +28,6 @@ import {
 import { Button } from "../../components/ui/Button"
 import { Badge } from "../../components/ui/Badge"
 import { Modal } from "../../components/ui/Modal"
-import { Input } from "../../components/ui/Input"
-import { Select } from "../../components/ui/Select"
 import { StatsCard } from "../../components/ui/StatsCard"
 
 export const AdminUsersPage: React.FC = () => {
@@ -62,7 +60,7 @@ export const AdminUsersPage: React.FC = () => {
     is_staff: false,
     is_superuser: false,
     tenant_id: "",
-    role_code: "institute_admin",
+    role_code: "institution_super_admin",
   })
 
   const [editUserForm, setEditUserForm] = useState({
@@ -77,7 +75,7 @@ export const AdminUsersPage: React.FC = () => {
   const [newPassword, setNewPassword] = useState<string>("")
   const [assignTenantForm, setAssignTenantForm] = useState({
     tenant_id: "",
-    role_code: "faculty",
+    role_code: "institution_super_admin",
     is_default: true,
   })
 
@@ -161,7 +159,7 @@ export const AdminUsersPage: React.FC = () => {
           is_staff: false,
           is_superuser: false,
           tenant_id: "",
-          role_code: "institute_admin",
+          role_code: "institution_super_admin",
         })
       }, 1000)
       await loadData()
@@ -247,7 +245,7 @@ export const AdminUsersPage: React.FC = () => {
     setSelectedUser(user)
     setAssignTenantForm({
       tenant_id: tenants[0]?.id || "",
-      role_code: "faculty",
+      role_code: "institution_super_admin",
       is_default: true,
     })
     setIsAssignTenantModalOpen(true)
@@ -297,13 +295,13 @@ export const AdminUsersPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-1.5">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 mb-1.5">
             <Users className="w-3.5 h-3.5" /> Identity & Access Management
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white">
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
             User Control Center
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Manage global authentication accounts, superuser privileges, password resets, and multi-tenant memberships.
           </p>
         </div>
@@ -314,7 +312,7 @@ export const AdminUsersPage: React.FC = () => {
             size="sm"
             onClick={loadData}
             disabled={isLoading}
-            className="bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800"
+            className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
             <span className="hidden sm:inline">Refresh</span>
@@ -328,6 +326,7 @@ export const AdminUsersPage: React.FC = () => {
               setIsCreateModalOpen(true)
             }}
             leftIcon={<Plus className="w-4 h-4" />}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-xs"
           >
             Create User
           </Button>
@@ -336,45 +335,45 @@ export const AdminUsersPage: React.FC = () => {
 
       {/* KPI Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Total Accounts</span>
-            <Users className="w-4 h-4 text-indigo-400" />
+            <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <p className="text-2xl font-black text-white mt-2">{totalUsersCount}</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white mt-2">{totalUsersCount}</p>
           <p className="text-[11px] text-slate-400 mt-1">Across all client tenants</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Active Users</span>
-            <UserCheck className="w-4 h-4 text-emerald-400" />
+            <UserCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <p className="text-2xl font-black text-emerald-400 mt-2">{activeUsersCount}</p>
+          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{activeUsersCount}</p>
           <p className="text-[11px] text-slate-400 mt-1">{totalUsersCount - activeUsersCount} suspended</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>SuperAdmins</span>
-            <ShieldCheck className="w-4 h-4 text-amber-400" />
+            <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           </div>
-          <p className="text-2xl font-black text-amber-400 mt-2">{superadminsCount}</p>
+          <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">{superadminsCount}</p>
           <p className="text-[11px] text-slate-400 mt-1">Full root privileges</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Staff & Support</span>
-            <ShieldAlert className="w-4 h-4 text-violet-400" />
+            <ShieldAlert className="w-4 h-4 text-violet-600 dark:text-violet-400" />
           </div>
-          <p className="text-2xl font-black text-violet-400 mt-2">{staffCount}</p>
+          <p className="text-2xl font-black text-violet-600 dark:text-violet-400 mt-2">{staffCount}</p>
           <p className="text-[11px] text-slate-400 mt-1">Internal operators</p>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-lg">
+      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-xs">
         <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -382,7 +381,7 @@ export const AdminUsersPage: React.FC = () => {
             placeholder="Search users by name, email, or phone number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
           />
         </div>
 
@@ -391,7 +390,7 @@ export const AdminUsersPage: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="all">Status: All</option>
             <option value="active">Active Only</option>
@@ -402,7 +401,7 @@ export const AdminUsersPage: React.FC = () => {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="all">Role: All</option>
             <option value="superuser">SuperAdmins</option>
@@ -414,7 +413,7 @@ export const AdminUsersPage: React.FC = () => {
           <select
             value={selectedTenantFilter}
             onChange={(e) => setSelectedTenantFilter(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="all">Tenant: All</option>
             {tenants.map((t) => (
@@ -427,11 +426,11 @@ export const AdminUsersPage: React.FC = () => {
       </div>
 
       {/* Users Table */}
-      <div className="overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+      <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 <th className="py-3.5 px-4">User Details</th>
                 <th className="py-3.5 px-4">Privileges</th>
                 <th className="py-3.5 px-4">Assigned Tenant(s)</th>
@@ -440,7 +439,7 @@ export const AdminUsersPage: React.FC = () => {
                 <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs text-slate-700 dark:text-slate-300">
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">
@@ -451,31 +450,31 @@ export const AdminUsersPage: React.FC = () => {
               ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">
-                    <Users className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-                    <p className="font-semibold text-slate-300">No users match your criteria.</p>
-                    <p className="text-[11px] text-slate-500 mt-1">Try adjusting search query or filters.</p>
+                    <Users className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                    <p className="font-semibold text-slate-700 dark:text-slate-300">No users match your criteria.</p>
+                    <p className="text-[11px] text-slate-400 mt-1">Try adjusting search query or filters.</p>
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((u) => {
                   const initial = (u.first_name?.[0] || u.email?.[0] || "U").toUpperCase()
                   return (
-                    <tr key={u.id} className="hover:bg-slate-800/40 transition-colors group">
+                    <tr key={u.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group">
                       {/* User details */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white font-black text-xs flex items-center justify-center shadow-md">
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
                             {initial}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-100 flex items-center gap-1.5">
+                            <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                               {u.full_name || "Unnamed User"}
                             </div>
-                            <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                              <Mail className="w-3 h-3 text-slate-500" /> {u.email}
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                              <Mail className="w-3 h-3 text-slate-400" /> {u.email}
                             </div>
                             {u.phone_number && (
-                              <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
+                              <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
                                 <Phone className="w-2.5 h-2.5" /> {u.phone_number}
                               </div>
                             )}
@@ -487,17 +486,17 @@ export const AdminUsersPage: React.FC = () => {
                       <td className="py-3.5 px-4">
                         <div className="flex flex-wrap items-center gap-1.5">
                           {u.is_superuser && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                              <ShieldCheck className="w-3 h-3 text-amber-400" /> SUPERADMIN
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30">
+                              <ShieldCheck className="w-3 h-3 text-amber-600 dark:text-amber-400" /> SUPERADMIN
                             </span>
                           )}
                           {u.is_staff && !u.is_superuser && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-violet-50 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-500/30">
                               STAFF
                             </span>
                           )}
                           {!u.is_staff && !u.is_superuser && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-800 text-slate-400 border border-slate-700/60">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60">
                               Standard User
                             </span>
                           )}
@@ -511,12 +510,12 @@ export const AdminUsersPage: React.FC = () => {
                             {u.memberships.map((m: any) => (
                               <div
                                 key={m.id}
-                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-950/80 border border-slate-800 text-slate-300 mr-1"
+                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 mr-1"
                               >
-                                <Building2 className="w-3 h-3 text-indigo-400" />
+                                <Building2 className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
                                 <span>{m.tenant_name}</span>
                                 {m.roles && m.roles.length > 0 && (
-                                  <span className="text-indigo-400 font-semibold">
+                                  <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
                                     ({m.roles.map((r: any) => r.name || r.code).join(", ")})
                                   </span>
                                 )}
@@ -531,22 +530,22 @@ export const AdminUsersPage: React.FC = () => {
                       {/* Status */}
                       <td className="py-3.5 px-4">
                         {u.is_active ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30">
                             <CheckCircle2 className="w-3 h-3" /> ACTIVE
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/15 dark:text-rose-400 dark:border-rose-500/30">
                             <XCircle className="w-3 h-3" /> SUSPENDED
                           </span>
                         )}
                       </td>
 
                       {/* Created */}
-                      <td className="py-3.5 px-4 text-[11px] text-slate-400">
+                      <td className="py-3.5 px-4 text-[11px] text-slate-500 dark:text-slate-400">
                         {new Date(u.created_at).toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
                         })}
                       </td>
 
@@ -558,8 +557,8 @@ export const AdminUsersPage: React.FC = () => {
                             onClick={() => handleToggleStatus(u)}
                             className={`p-1.5 rounded-lg border transition-colors ${
                               u.is_active
-                                ? "bg-slate-800 hover:bg-rose-950/40 text-slate-300 hover:text-rose-400 border-slate-700 hover:border-rose-800"
-                                : "bg-emerald-950/40 text-emerald-400 border-emerald-800 hover:bg-emerald-900/60"
+                                ? "bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-800"
+                                : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100"
                             }`}
                             title={u.is_active ? "Suspend User" : "Activate User"}
                           >
@@ -569,7 +568,7 @@ export const AdminUsersPage: React.FC = () => {
                           {/* Reset Password */}
                           <button
                             onClick={() => handleOpenPasswordReset(u)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-amber-950/40 text-slate-300 hover:text-amber-400 border border-slate-700 hover:border-amber-800 transition-colors"
+                            className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-slate-600 dark:text-slate-300 hover:text-amber-700 dark:hover:text-amber-400 border border-slate-200 dark:border-slate-700 hover:border-amber-300 dark:hover:border-amber-800 transition-colors"
                             title="Reset User Password"
                           >
                             <KeyRound className="w-3.5 h-3.5" />
@@ -578,7 +577,7 @@ export const AdminUsersPage: React.FC = () => {
                           {/* Assign Tenant */}
                           <button
                             onClick={() => handleOpenAssignTenant(u)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-indigo-950/40 text-slate-300 hover:text-indigo-400 border border-slate-700 hover:border-indigo-800 transition-colors"
+                            className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-slate-600 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-indigo-400 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-800 transition-colors"
                             title="Assign to Institution Tenant"
                           >
                             <Building2 className="w-3.5 h-3.5" />
@@ -587,7 +586,7 @@ export const AdminUsersPage: React.FC = () => {
                           {/* Edit Details */}
                           <button
                             onClick={() => handleOpenEdit(u)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                            className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-white border border-slate-200 dark:border-slate-700 hover:border-indigo-300 transition-colors"
                             title="Edit User Info"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
@@ -596,7 +595,7 @@ export const AdminUsersPage: React.FC = () => {
                           {/* Delete */}
                           <button
                             onClick={() => handleDeleteUser(u)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/50 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-800 transition-colors"
+                            className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-800 transition-colors"
                             title="Permanently Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -617,49 +616,49 @@ export const AdminUsersPage: React.FC = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         title={
-          <div className="flex items-center gap-2 text-white">
-            <Users className="w-5 h-5 text-indigo-400" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <span>Create Platform User</span>
           </div>
         }
         description="Provision a new user account with root or tenant-level administrative roles."
-        className="bg-slate-900 border-slate-800 text-slate-100"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
       >
         <form onSubmit={handleCreateUser} className="space-y-4 pt-2">
           {actionError && (
-            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
               <span>{actionError}</span>
             </div>
           )}
 
           {actionSuccess && (
-            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
               <span>{actionSuccess}</span>
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">First Name</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
               <input
                 type="text"
                 required
                 value={createUserForm.first_name}
                 onChange={(e) => setCreateUserForm({ ...createUserForm, first_name: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 placeholder="e.g. John"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Last Name</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
               <input
                 type="text"
                 required
                 value={createUserForm.last_name}
                 onChange={(e) => setCreateUserForm({ ...createUserForm, last_name: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 placeholder="e.g. Doe"
               />
             </div>
@@ -667,53 +666,53 @@ export const AdminUsersPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Email Address (Login ID)</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address (Login ID)</label>
               <input
                 type="email"
                 required
                 value={createUserForm.email}
                 onChange={(e) => setCreateUserForm({ ...createUserForm, email: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 placeholder="user@institution.com"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Password</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Password</label>
               <input
                 type="password"
                 required
                 minLength={8}
                 value={createUserForm.password}
                 onChange={(e) => setCreateUserForm({ ...createUserForm, password: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 placeholder="Minimum 8 characters"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Phone Number (Optional)</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Phone Number (Optional)</label>
             <input
               type="tel"
               value={createUserForm.phone_number}
               onChange={(e) => setCreateUserForm({ ...createUserForm, phone_number: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               placeholder="+1 (555) 019-2834"
             />
           </div>
 
           {/* Tenant & Role Link */}
-          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               Institution Membership (Optional)
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Assign to Tenant</label>
+                <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Assign to Tenant</label>
                 <select
                   value={createUserForm.tenant_id}
                   onChange={(e) => setCreateUserForm({ ...createUserForm, tenant_id: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
                   <option value="">-- No Initial Tenant --</option>
                   {tenants.map((t) => (
@@ -724,15 +723,18 @@ export const AdminUsersPage: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Assigned Role</label>
+                <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Assigned Role</label>
                 <select
                   value={createUserForm.role_code}
                   onChange={(e) => setCreateUserForm({ ...createUserForm, role_code: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
+                  <option value="institution_super_admin">Institution Super Admin (Tenant Owner)</option>
                   <option value="institute_admin">Institution Administrator</option>
                   <option value="faculty">Faculty / Instructor</option>
                   <option value="accountant">Accountant / Bursar</option>
+                  <option value="registrar">Registrar</option>
+                  <option value="staff">Staff Member</option>
                   <option value="student">Student</option>
                 </select>
               </div>
@@ -741,40 +743,39 @@ export const AdminUsersPage: React.FC = () => {
 
           {/* Global Privileges Switches */}
           <div className="space-y-2 pt-1">
-            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors">
+            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
               <input
                 type="checkbox"
                 checked={createUserForm.is_superuser}
                 onChange={(e) => setCreateUserForm({ ...createUserForm, is_superuser: e.target.checked })}
-                className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700 focus:ring-indigo-500"
+                className="w-4 h-4 rounded text-indigo-600 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:ring-indigo-500"
               />
               <div>
-                <p className="text-xs font-bold text-white">Grant SuperUser (Root) Access</p>
-                <p className="text-[11px] text-slate-400">Allows global control over all platform tenants, data, and users.</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white">Grant SuperUser (Root) Access</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Allows global control over all platform tenants, data, and users.</p>
               </div>
             </label>
 
-            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors">
+            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
               <input
                 type="checkbox"
                 checked={createUserForm.is_staff}
                 onChange={(e) => setCreateUserForm({ ...createUserForm, is_staff: e.target.checked })}
-                className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700 focus:ring-indigo-500"
+                className="w-4 h-4 rounded text-indigo-600 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:ring-indigo-500"
               />
               <div>
-                <p className="text-xs font-bold text-white">Grant Staff Status</p>
-                <p className="text-[11px] text-slate-400">Designates internal operator or support staff member.</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white">Grant Staff Status</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Designates internal operator or support staff member.</p>
               </div>
             </label>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsCreateModalOpen(false)}
-              className="bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800"
             >
               Cancel
             </Button>
@@ -790,108 +791,107 @@ export const AdminUsersPage: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         title={
-          <div className="flex items-center gap-2 text-white">
-            <Edit3 className="w-5 h-5 text-indigo-400" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <Edit3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <span>Edit User: {selectedUser?.email}</span>
           </div>
         }
         description="Update contact profile details and administrative privilege flags."
-        className="bg-slate-900 border-slate-800 text-slate-100"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
       >
         <form onSubmit={handleUpdateUser} className="space-y-4 pt-2">
           {actionError && (
-            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
               <span>{actionError}</span>
             </div>
           )}
 
           {actionSuccess && (
-            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
               <span>{actionSuccess}</span>
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">First Name</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
               <input
                 type="text"
                 value={editUserForm.first_name}
                 onChange={(e) => setEditUserForm({ ...editUserForm, first_name: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Last Name</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
               <input
                 type="text"
                 value={editUserForm.last_name}
                 onChange={(e) => setEditUserForm({ ...editUserForm, last_name: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Phone Number</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
             <input
               type="tel"
               value={editUserForm.phone_number}
               onChange={(e) => setEditUserForm({ ...editUserForm, phone_number: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
 
           <div className="space-y-2 pt-2">
-            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
+            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer">
               <input
                 type="checkbox"
                 checked={editUserForm.is_active}
                 onChange={(e) => setEditUserForm({ ...editUserForm, is_active: e.target.checked })}
-                className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
+                className="w-4 h-4 rounded text-indigo-600 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
               />
               <div>
-                <p className="text-xs font-bold text-white">Active Account</p>
-                <p className="text-[11px] text-slate-400">Uncheck to prevent this user from signing in.</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white">Active Account</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Uncheck to prevent this user from signing in.</p>
               </div>
             </label>
 
-            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
+            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer">
               <input
                 type="checkbox"
                 checked={editUserForm.is_superuser}
                 onChange={(e) => setEditUserForm({ ...editUserForm, is_superuser: e.target.checked })}
-                className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
+                className="w-4 h-4 rounded text-indigo-600 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
               />
               <div>
-                <p className="text-xs font-bold text-white">SuperAdmin Role</p>
-                <p className="text-[11px] text-slate-400">Grants full root access across the SaaS platform.</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white">SuperAdmin Role</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Grants full root access across the SaaS platform.</p>
               </div>
             </label>
 
-            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
+            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer">
               <input
                 type="checkbox"
                 checked={editUserForm.is_staff}
                 onChange={(e) => setEditUserForm({ ...editUserForm, is_staff: e.target.checked })}
-                className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
+                className="w-4 h-4 rounded text-indigo-600 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
               />
               <div>
-                <p className="text-xs font-bold text-white">Staff Member</p>
-                <p className="text-[11px] text-slate-400">Designates internal operations or support personnel.</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white">Staff Member</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Designates internal operations or support personnel.</p>
               </div>
             </label>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsEditModalOpen(false)}
-              className="bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800"
             >
               Cancel
             </Button>
@@ -907,49 +907,48 @@ export const AdminUsersPage: React.FC = () => {
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
         title={
-          <div className="flex items-center gap-2 text-white">
-            <KeyRound className="w-5 h-5 text-amber-400" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <KeyRound className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             <span>Reset Password: {selectedUser?.email}</span>
           </div>
         }
         description="Directly assign a new secure password for this user without requiring email reset links."
-        className="bg-slate-900 border-slate-800 text-slate-100"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
       >
         <form onSubmit={handleResetPassword} className="space-y-4 pt-2">
           {actionError && (
-            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
               <span>{actionError}</span>
             </div>
           )}
 
           {actionSuccess && (
-            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
               <span>{actionSuccess}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">New Password</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">New Password</label>
             <input
               type="password"
               required
               minLength={8}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 focus:outline-none"
               placeholder="Minimum 8 characters"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsPasswordModalOpen(false)}
-              className="bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800"
             >
               Cancel
             </Button>
@@ -957,7 +956,7 @@ export const AdminUsersPage: React.FC = () => {
               type="submit"
               size="sm"
               disabled={actionLoading || newPassword.length < 8}
-              className="bg-amber-600 hover:bg-amber-500 text-white font-bold"
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold"
             >
               {actionLoading ? "Resetting..." : "Apply New Password"}
             </Button>
@@ -970,35 +969,35 @@ export const AdminUsersPage: React.FC = () => {
         isOpen={isAssignTenantModalOpen}
         onClose={() => setIsAssignTenantModalOpen(false)}
         title={
-          <div className="flex items-center gap-2 text-white">
-            <Building2 className="w-5 h-5 text-indigo-400" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <Building2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <span>Assign Tenant: {selectedUser?.email}</span>
           </div>
         }
         description="Link this user to an institution workspace and grant a contextual role."
-        className="bg-slate-900 border-slate-800 text-slate-100"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
       >
         <form onSubmit={handleAssignTenant} className="space-y-4 pt-2">
           {actionError && (
-            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
               <span>{actionError}</span>
             </div>
           )}
 
           {actionSuccess && (
-            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
               <span>{actionSuccess}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Target Institution</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Institution</label>
             <select
               value={assignTenantForm.tenant_id}
               onChange={(e) => setAssignTenantForm({ ...assignTenantForm, tenant_id: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
               {tenants.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -1009,39 +1008,41 @@ export const AdminUsersPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Role in Institution</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Role in Institution</label>
             <select
               value={assignTenantForm.role_code}
               onChange={(e) => setAssignTenantForm({ ...assignTenantForm, role_code: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
+              <option value="institution_super_admin">Institution Super Admin (Tenant Owner)</option>
               <option value="institute_admin">Institution Administrator</option>
               <option value="faculty">Faculty / Instructor</option>
               <option value="accountant">Accountant / Bursar</option>
+              <option value="registrar">Registrar</option>
+              <option value="staff">Staff Member</option>
               <option value="student">Student</option>
             </select>
           </div>
 
-          <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
+          <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer">
             <input
               type="checkbox"
               checked={assignTenantForm.is_default}
               onChange={(e) => setAssignTenantForm({ ...assignTenantForm, is_default: e.target.checked })}
-              className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
+              className="w-4 h-4 rounded text-indigo-600 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
             />
             <div>
-              <p className="text-xs font-bold text-white">Set as Default Workspace</p>
-              <p className="text-[11px] text-slate-400">User will automatically open this workspace on login.</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white">Set as Default Workspace</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">User will automatically open this workspace on login.</p>
             </div>
           </label>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsAssignTenantModalOpen(false)}
-              className="bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800"
             >
               Cancel
             </Button>

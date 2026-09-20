@@ -165,13 +165,13 @@ export const AdminSubscriptionsPage: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-1.5">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 mb-1.5">
             <Layers className="w-3.5 h-3.5" /> SaaS Monetization & License Matrix
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white">
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
             Subscription Plans & Quota Limits
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Define subscription tiers, enforce student & staff resource quotas, and monitor platform recurring revenue.
           </p>
         </div>
@@ -181,7 +181,7 @@ export const AdminSubscriptionsPage: React.FC = () => {
           size="sm"
           onClick={loadTenants}
           disabled={isLoading}
-          className="bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800 self-start sm:self-auto"
+          className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 self-start sm:self-auto"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
           <span>Refresh</span>
@@ -190,40 +190,40 @@ export const AdminSubscriptionsPage: React.FC = () => {
 
       {/* Financial KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Estimated Monthly MRR</span>
-            <DollarSign className="w-4 h-4 text-emerald-400" />
+            <DollarSign className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
           </div>
-          <p className="text-2xl font-black text-emerald-400 mt-2">${totalMRR.toLocaleString()}</p>
-          <p className="text-[11px] text-slate-400 mt-1">${(totalMRR * 12).toLocaleString()} Annual Run Rate</p>
+          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">${totalMRR.toLocaleString()}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">${(totalMRR * 12).toLocaleString()} Annual Run Rate</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Enterprise Tenants</span>
-            <Crown className="w-4 h-4 text-amber-400" />
+            <Crown className="w-4 h-4 text-amber-500 dark:text-amber-400" />
           </div>
-          <p className="text-2xl font-black text-amber-400 mt-2">{planCounts.Enterprise}</p>
-          <p className="text-[11px] text-slate-400 mt-1">Tier-1 $999/mo licenses</p>
+          <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">{planCounts.Enterprise}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Tier-1 $999/mo licenses</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Professional Tenants</span>
-            <Zap className="w-4 h-4 text-indigo-400" />
+            <Zap className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
           </div>
-          <p className="text-2xl font-black text-indigo-400 mt-2">{planCounts.Professional}</p>
-          <p className="text-[11px] text-slate-400 mt-1">Tier-2 $499/mo licenses</p>
+          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-2">{planCounts.Professional}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Tier-2 $499/mo licenses</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Starter Tenants</span>
-            <Building2 className="w-4 h-4 text-blue-400" />
+            <Building2 className="w-4 h-4 text-blue-500 dark:text-blue-400" />
           </div>
-          <p className="text-2xl font-black text-blue-400 mt-2">{planCounts.Starter}</p>
-          <p className="text-[11px] text-slate-400 mt-1">Tier-3 $199/mo licenses</p>
+          <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-2">{planCounts.Starter}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Tier-3 $199/mo licenses</p>
         </div>
       </div>
 
@@ -232,10 +232,10 @@ export const AdminSubscriptionsPage: React.FC = () => {
         {SAAS_PLANS.map((plan) => (
           <div
             key={plan.id}
-            className={`relative p-6 rounded-3xl bg-slate-900 border transition-all flex flex-col justify-between ${
+            className={`relative p-6 rounded-3xl bg-white dark:bg-slate-900 border transition-all flex flex-col justify-between ${
               plan.recommended
-                ? "border-indigo-500 shadow-xl shadow-indigo-500/10"
-                : "border-slate-800 hover:border-slate-700 shadow-lg"
+                ? "border-indigo-500 shadow-lg shadow-indigo-500/10 dark:shadow-indigo-500/10"
+                : "border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs"
             }`}
           >
             {plan.recommended && (
@@ -249,36 +249,36 @@ export const AdminSubscriptionsPage: React.FC = () => {
                 <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-bold border ${plan.badgeColor}`}>
                   {plan.name}
                 </span>
-                <span className="text-[11px] text-slate-400 font-semibold">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
                   {planCounts[plan.id as keyof typeof planCounts]} active
                 </span>
               </div>
 
               <div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-white">${plan.price}</span>
-                  <span className="text-xs text-slate-400 font-medium">{plan.billingPeriod}</span>
+                  <span className="text-3xl font-black text-slate-900 dark:text-white">${plan.price}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{plan.billingPeriod}</span>
                 </div>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">{plan.description}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">{plan.description}</p>
               </div>
 
               {/* Resource Quotas */}
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 text-xs">
-                <div className="flex justify-between text-slate-300">
-                  <span className="text-slate-400">Student Capacity:</span>
-                  <span className="font-bold text-white">{plan.studentLimit.toLocaleString()}</span>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
+                <div className="flex justify-between text-slate-700 dark:text-slate-300">
+                  <span className="text-slate-500 dark:text-slate-400">Student Capacity:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{plan.studentLimit.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-slate-300">
-                  <span className="text-slate-400">Staff Limit:</span>
-                  <span className="font-bold text-white">{plan.staffLimit.toLocaleString()}</span>
+                <div className="flex justify-between text-slate-700 dark:text-slate-300">
+                  <span className="text-slate-500 dark:text-slate-400">Staff Limit:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{plan.staffLimit.toLocaleString()}</span>
                 </div>
               </div>
 
               {/* Feature Checklist */}
               <ul className="space-y-2 pt-2 text-xs">
                 {plan.features.map((f, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <li key={idx} className="flex items-start gap-2 text-slate-700 dark:text-slate-300">
+                    <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <span>{f}</span>
                   </li>
                 ))}
@@ -289,18 +289,18 @@ export const AdminSubscriptionsPage: React.FC = () => {
       </div>
 
       {/* Active Tenant Subscription Management Table */}
-      <div className="overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4 p-5">
+      <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4 p-5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-white">Client Tenant Subscriptions & Quotas</h2>
-            <p className="text-xs text-slate-400">Monitor utilization vs plan capacities across all registered clients.</p>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Client Tenant Subscriptions & Quotas</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Monitor utilization vs plan capacities across all registered clients.</p>
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 <th className="py-3 px-4">Client Institution</th>
                 <th className="py-3 px-4">Current Plan</th>
                 <th className="py-3 px-4">Student Quota</th>
@@ -309,22 +309,22 @@ export const AdminSubscriptionsPage: React.FC = () => {
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
               {tenants.map((t) => {
                 const planName = t.subscription_reference || "Enterprise"
                 const planDef = SAAS_PLANS.find((p) => p.id === planName) || SAAS_PLANS[2]
                 const studentUsagePercent = Math.min(100, Math.round(((t.students_count || 0) / planDef.studentLimit) * 100))
 
                 return (
-                  <tr key={t.id} className="hover:bg-slate-800/40 transition-colors">
+                  <tr key={t.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-600/30 text-indigo-400 font-bold flex items-center justify-center text-xs">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/15 dark:bg-indigo-600/30 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center text-xs">
                           {t.name.charAt(0)}
                         </div>
                         <div>
-                          <div className="font-bold text-slate-100">{t.name}</div>
-                          <div className="text-[10px] text-slate-400 font-mono">slug: {t.slug}</div>
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{t.name}</div>
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">slug: {t.slug}</div>
                         </div>
                       </div>
                     </td>
@@ -338,10 +338,10 @@ export const AdminSubscriptionsPage: React.FC = () => {
                     <td className="py-3.5 px-4">
                       <div className="w-36 space-y-1">
                         <div className="flex justify-between text-[11px]">
-                          <span className="font-bold text-slate-200">{t.students_count || 0}</span>
-                          <span className="text-slate-400">/ {planDef.studentLimit}</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">{t.students_count || 0}</span>
+                          <span className="text-slate-500 dark:text-slate-400">/ {planDef.studentLimit}</span>
                         </div>
-                        <div className="h-1.5 w-full rounded-full bg-slate-950 overflow-hidden">
+                        <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-950 overflow-hidden">
                           <div
                             className={`h-full rounded-full ${
                               studentUsagePercent > 90 ? "bg-rose-500" : "bg-indigo-500"
@@ -353,12 +353,12 @@ export const AdminSubscriptionsPage: React.FC = () => {
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <span className="font-bold text-slate-200">{t.staff_count || 0}</span>
-                      <span className="text-slate-400 text-[11px]"> / {planDef.staffLimit}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">{t.staff_count || 0}</span>
+                      <span className="text-slate-500 dark:text-slate-400 text-[11px]"> / {planDef.staffLimit}</span>
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <span className="font-bold text-emerald-400">${planDef.price}/mo</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">${planDef.price}/mo</span>
                     </td>
 
                     <td className="py-3.5 px-4 text-right">
@@ -366,7 +366,7 @@ export const AdminSubscriptionsPage: React.FC = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => handleOpenChangePlan(t)}
-                        className="h-7 px-2.5 text-[11px] bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
+                        className="h-7 px-2.5 text-[11px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700"
                         leftIcon={<Edit3 className="w-3 h-3" />}
                       >
                         Adjust Tier
@@ -385,18 +385,18 @@ export const AdminSubscriptionsPage: React.FC = () => {
         isOpen={isPlanModalOpen}
         onClose={() => setIsPlanModalOpen(false)}
         title={
-          <div className="flex items-center gap-2 text-white">
-            <Crown className="w-5 h-5 text-amber-400" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <Crown className="w-5 h-5 text-amber-500 dark:text-amber-400" />
             <span>Adjust Subscription Tier: {selectedTenant?.name}</span>
           </div>
         }
         description="Upgrade or downgrade the SaaS license tier and adjust capacity allocations."
-        className="bg-slate-900 border-slate-800 text-slate-100"
+        size="md"
       >
         <form onSubmit={handleApplyPlan} className="space-y-4 pt-2">
           {actionSuccess && (
-            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500 dark:text-emerald-400" />
               <span>{actionSuccess}</span>
             </div>
           )}
@@ -407,8 +407,8 @@ export const AdminSubscriptionsPage: React.FC = () => {
                 key={p.id}
                 className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
                   targetPlan === p.id
-                    ? "bg-indigo-950/40 border-indigo-500 text-white shadow-md shadow-indigo-500/10"
-                    : "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700"
+                    ? "bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500 text-slate-900 dark:text-white shadow-xs shadow-indigo-500/10"
+                    : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -418,27 +418,27 @@ export const AdminSubscriptionsPage: React.FC = () => {
                     value={p.id}
                     checked={targetPlan === p.id}
                     onChange={(e) => setTargetPlan(e.target.value)}
-                    className="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700"
+                    className="w-4 h-4 text-indigo-600 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:ring-indigo-500"
                   />
                   <div>
-                    <p className="font-bold text-xs text-white">{p.name}</p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="font-bold text-xs text-slate-900 dark:text-white">{p.name}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
                       Up to {p.studentLimit.toLocaleString()} Students • {p.staffLimit} Staff
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-indigo-400">${p.price}/mo</span>
+                <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">${p.price}/mo</span>
               </label>
             ))}
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsPlanModalOpen(false)}
-              className="bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800"
+              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Cancel
             </Button>

@@ -13,9 +13,11 @@ import { FinanceService } from "./finance"
 import { CommunicationsService } from "./communications"
 import { AuditService } from "./audit"
 import { PlatformAdminService } from "./platformAdmin"
+import { InstitutionUsersService, RolesService, PermissionsService } from "./institutionUsers"
 
 export * from "./types"
 export * from "./client"
+export * from "./institutionUsers"
 
 export class ApiService extends BaseApiClient {
   public health = {
@@ -50,6 +52,9 @@ export class ApiService extends BaseApiClient {
   public communications = new CommunicationsService(this)
   public audit = new AuditService(this)
   public platformAdmin = new PlatformAdminService(this)
+  public institutionUsers = new InstitutionUsersService(this)
+  public roles = new RolesService(this)
+  public permissions = new PermissionsService(this)
 }
 
 export const api = new ApiService()

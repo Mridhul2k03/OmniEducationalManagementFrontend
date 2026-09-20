@@ -251,13 +251,13 @@ export const AdminTenantsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-1.5">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 mb-1.5">
             <Building2 className="w-3.5 h-3.5" /> Multi-Tenant Provisioning
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white">
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
             Client Institutions & Organizations
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Manage educational tenants, create isolated databases/domains, adjust capacity quotas, and configure subscription plans.
           </p>
         </div>
@@ -268,7 +268,7 @@ export const AdminTenantsPage: React.FC = () => {
             size="sm"
             onClick={loadTenants}
             disabled={isLoading}
-            className="bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800"
+            className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
             <span className="hidden sm:inline">Refresh</span>
@@ -290,53 +290,53 @@ export const AdminTenantsPage: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Total Institutions</span>
-            <Building2 className="w-4 h-4 text-indigo-400" />
+            <Building2 className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
           </div>
-          <p className="text-2xl font-black text-white mt-2">{totalInstitutions}</p>
-          <p className="text-[11px] text-slate-400 mt-1">Multi-tenant instances</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white mt-2">{totalInstitutions}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Multi-tenant instances</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Active Tenants</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
           </div>
-          <p className="text-2xl font-black text-emerald-400 mt-2">{activeCount}</p>
-          <p className="text-[11px] text-slate-400 mt-1">100% operational</p>
+          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{activeCount}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">100% operational</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Total Enrolled Learners</span>
-            <Users className="w-4 h-4 text-violet-400" />
+            <Users className="w-4 h-4 text-violet-500 dark:text-violet-400" />
           </div>
-          <p className="text-2xl font-black text-violet-400 mt-2">{totalStudents}</p>
-          <p className="text-[11px] text-slate-400 mt-1">Across all organizations</p>
+          <p className="text-2xl font-black text-violet-600 dark:text-violet-400 mt-2">{totalStudents}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Across all organizations</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span>Active Faculty & Staff</span>
-            <GraduationCap className="w-4 h-4 text-amber-400" />
+            <GraduationCap className="w-4 h-4 text-amber-500 dark:text-amber-400" />
           </div>
-          <p className="text-2xl font-black text-amber-400 mt-2">{totalStaff}</p>
-          <p className="text-[11px] text-slate-400 mt-1">Registered educators</p>
+          <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">{totalStaff}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Registered educators</p>
         </div>
       </div>
 
       {/* Filter and View Bar */}
-      <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-lg">
+      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-xs">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <input
             type="text"
             placeholder="Search institutions by name, legal title, slug, or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
           />
         </div>
 
@@ -345,7 +345,7 @@ export const AdminTenantsPage: React.FC = () => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="all">All Types</option>
             <option value="school">K-12 School</option>
@@ -358,7 +358,7 @@ export const AdminTenantsPage: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="all">Status: All</option>
             <option value="active">Active</option>
@@ -367,11 +367,11 @@ export const AdminTenantsPage: React.FC = () => {
           </select>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-950 border border-slate-800">
+          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
             <button
               onClick={() => setViewMode("grid")}
               className={`p-1.5 rounded-lg transition-colors ${
-                viewMode === "grid" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                viewMode === "grid" ? "bg-indigo-600 text-white shadow-xs" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
               title="Grid View"
             >
@@ -380,7 +380,7 @@ export const AdminTenantsPage: React.FC = () => {
             <button
               onClick={() => setViewMode("table")}
               className={`p-1.5 rounded-lg transition-colors ${
-                viewMode === "table" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                viewMode === "table" ? "bg-indigo-600 text-white shadow-xs" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
               title="Table View"
             >
@@ -392,14 +392,14 @@ export const AdminTenantsPage: React.FC = () => {
 
       {/* Grid or Table Display */}
       {isLoading ? (
-        <div className="py-20 text-center text-slate-400 bg-slate-900 rounded-2xl border border-slate-800">
+        <div className="py-20 text-center text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
           <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-indigo-500" />
-          <p className="font-semibold text-slate-300">Loading institutions...</p>
+          <p className="font-semibold text-slate-700 dark:text-slate-300">Loading institutions...</p>
         </div>
       ) : filteredTenants.length === 0 ? (
-        <div className="py-20 text-center text-slate-400 bg-slate-900 rounded-2xl border border-slate-800">
-          <Building2 className="w-10 h-10 mx-auto mb-3 text-slate-600" />
-          <p className="font-bold text-slate-200">No institutions match your filters</p>
+        <div className="py-20 text-center text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <Building2 className="w-10 h-10 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+          <p className="font-bold text-slate-800 dark:text-slate-200">No institutions match your filters</p>
           <p className="text-xs text-slate-500 mt-1">Try resetting search query or onboard a new tenant.</p>
         </div>
       ) : viewMode === "grid" ? (
@@ -408,21 +408,21 @@ export const AdminTenantsPage: React.FC = () => {
           {filteredTenants.map((t) => (
             <div
               key={t.id}
-              className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-all flex flex-col justify-between group shadow-lg hover:shadow-indigo-500/5"
+              className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-500/50 transition-all flex flex-col justify-between group shadow-xs hover:shadow-md"
             >
               <div className="space-y-4">
                 {/* Card Top */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-700 text-white font-black text-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-700 text-white font-black text-xl flex items-center justify-center shadow-md shadow-indigo-500/20">
                       {t.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h3 className="font-bold text-base text-white group-hover:text-indigo-300 transition-colors line-clamp-1">
+                      <h3 className="font-bold text-base text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors line-clamp-1">
                         {t.name}
                       </h3>
-                      <div className="text-[11px] font-mono text-slate-400 flex items-center gap-1 mt-0.5">
-                        <Globe className="w-3 h-3 text-slate-500" />
+                      <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                        <Globe className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                         <span>slug: {t.slug}</span>
                       </div>
                     </div>
@@ -432,13 +432,13 @@ export const AdminTenantsPage: React.FC = () => {
                   <span
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                       t.status === "active"
-                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                        : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                        : "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30"
                     }`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        t.status === "active" ? "bg-emerald-400" : "bg-rose-400"
+                        t.status === "active" ? "bg-emerald-500 dark:bg-emerald-400" : "bg-rose-500 dark:bg-rose-400"
                       }`}
                     />
                     {t.status}
@@ -447,49 +447,49 @@ export const AdminTenantsPage: React.FC = () => {
 
                 {/* Tags */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-950 text-indigo-400 border border-slate-800">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-950 text-indigo-700 dark:text-indigo-400 border border-slate-200 dark:border-slate-800">
                     {t.institution_type}
                   </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-950/60 text-indigo-300 border border-indigo-800/40">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40">
                     Tier: {t.subscription_reference || "Enterprise"}
                   </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-mono text-slate-400 bg-slate-950 border border-slate-800">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
                     {t.currency} • {t.timezone}
                   </span>
                 </div>
 
                 {/* Metrics */}
-                <div className="grid grid-cols-4 gap-2 p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 text-center">
+                <div className="grid grid-cols-4 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200/80 dark:border-slate-800/80 text-center">
                   <div>
-                    <p className="text-xs font-black text-slate-200">{t.students_count || 0}</p>
+                    <p className="text-xs font-black text-slate-800 dark:text-slate-200">{t.students_count || 0}</p>
                     <p className="text-[9px] uppercase tracking-wider text-slate-500">Students</p>
                   </div>
                   <div>
-                    <p className="text-xs font-black text-slate-200">{t.staff_count || 0}</p>
+                    <p className="text-xs font-black text-slate-800 dark:text-slate-200">{t.staff_count || 0}</p>
                     <p className="text-[9px] uppercase tracking-wider text-slate-500">Staff</p>
                   </div>
                   <div>
-                    <p className="text-xs font-black text-slate-200">{t.users_count || 0}</p>
+                    <p className="text-xs font-black text-slate-800 dark:text-slate-200">{t.users_count || 0}</p>
                     <p className="text-[9px] uppercase tracking-wider text-slate-500">Users</p>
                   </div>
                   <div>
-                    <p className="text-xs font-black text-slate-200">{t.invoices_count || 0}</p>
+                    <p className="text-xs font-black text-slate-800 dark:text-slate-200">{t.invoices_count || 0}</p>
                     <p className="text-[9px] uppercase tracking-wider text-slate-500">Invoices</p>
                   </div>
                 </div>
 
                 {/* Contact info */}
                 {(t.contact_email || t.contact_phone) && (
-                  <div className="space-y-1 text-[11px] text-slate-400">
+                  <div className="space-y-1 text-[11px] text-slate-600 dark:text-slate-400">
                     {t.contact_email && (
                       <div className="flex items-center gap-1.5 truncate">
-                        <Mail className="w-3 h-3 text-slate-500 shrink-0" />
+                        <Mail className="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" />
                         <span className="truncate">{t.contact_email}</span>
                       </div>
                     )}
                     {t.contact_phone && (
                       <div className="flex items-center gap-1.5">
-                        <Phone className="w-3 h-3 text-slate-500 shrink-0" />
+                        <Phone className="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" />
                         <span>{t.contact_phone}</span>
                       </div>
                     )}
@@ -498,12 +498,12 @@ export const AdminTenantsPage: React.FC = () => {
               </div>
 
               {/* Bottom Actions */}
-              <div className="pt-4 mt-4 border-t border-slate-800 flex items-center justify-between gap-2">
+              <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleEnterWorkspace(t)}
-                  className="flex-1 bg-indigo-950/30 hover:bg-indigo-900/40 text-indigo-300 border-indigo-800/40 text-xs"
+                  className="flex-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/40 text-xs"
                   rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                 >
                   Enter Workspace
@@ -514,8 +514,8 @@ export const AdminTenantsPage: React.FC = () => {
                     onClick={() => handleToggleStatus(t)}
                     className={`p-2 rounded-xl border text-xs transition-colors ${
                       t.status === "active"
-                        ? "bg-slate-950 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border-slate-800 hover:border-rose-800"
-                        : "bg-emerald-950/40 text-emerald-400 border-emerald-800 hover:bg-emerald-900/60"
+                        ? "bg-slate-100 hover:bg-rose-50 dark:bg-slate-950 dark:hover:bg-rose-950/40 text-slate-600 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 border-slate-200 dark:border-slate-800 hover:border-rose-300 dark:hover:border-rose-800"
+                        : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-900/60"
                     }`}
                     title={t.status === "active" ? "Suspend Organization" : "Activate Organization"}
                   >
@@ -524,7 +524,7 @@ export const AdminTenantsPage: React.FC = () => {
 
                   <button
                     onClick={() => handleOpenEdit(t)}
-                    className="p-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors"
+                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-950 dark:hover:bg-slate-800 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-800 transition-colors"
                     title="Edit Settings"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
@@ -532,7 +532,7 @@ export const AdminTenantsPage: React.FC = () => {
 
                   <button
                     onClick={() => handleDeleteTenant(t)}
-                    className="p-2 rounded-xl bg-slate-950 hover:bg-rose-950/50 text-slate-500 hover:text-rose-400 border border-slate-800 hover:border-rose-800 transition-colors"
+                    className="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 dark:bg-slate-950 dark:hover:bg-rose-950/50 text-slate-500 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-800 hover:border-rose-300 dark:hover:border-rose-800 transition-colors"
                     title="Delete Tenant"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -544,11 +544,11 @@ export const AdminTenantsPage: React.FC = () => {
         </div>
       ) : (
         /* Table View */
-        <div className="overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+        <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   <th className="py-3.5 px-4">Institution</th>
                   <th className="py-3.5 px-4">Type & Tier</th>
                   <th className="py-3.5 px-4">Learners & Staff</th>
@@ -557,36 +557,36 @@ export const AdminTenantsPage: React.FC = () => {
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-xs">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
                 {filteredTenants.map((t) => (
-                  <tr key={t.id} className="hover:bg-slate-800/40 transition-colors">
+                  <tr key={t.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white font-black text-xs flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
                           {t.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-bold text-slate-100">{t.name}</div>
-                          <div className="text-[10px] text-slate-400 font-mono">slug: {t.slug}</div>
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{t.name}</div>
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">slug: {t.slug}</div>
                         </div>
                       </div>
                     </td>
 
                     <td className="py-3.5 px-4">
                       <div className="flex flex-col gap-1">
-                        <span className="text-slate-200 font-medium uppercase text-[10px]">
+                        <span className="text-slate-700 dark:text-slate-200 font-medium uppercase text-[10px]">
                           {t.institution_type}
                         </span>
-                        <span className="text-indigo-400 text-[10px] font-semibold">
+                        <span className="text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold">
                           Tier: {t.subscription_reference || "Enterprise"}
                         </span>
                       </div>
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="text-slate-300">
-                        <span className="font-bold text-white">{t.students_count || 0}</span> students,{" "}
-                        <span className="font-bold text-white">{t.staff_count || 0}</span> staff
+                      <div className="text-slate-600 dark:text-slate-300">
+                        <span className="font-bold text-slate-900 dark:text-white">{t.students_count || 0}</span> students,{" "}
+                        <span className="font-bold text-slate-900 dark:text-white">{t.staff_count || 0}</span> staff
                       </div>
                     </td>
 
@@ -594,15 +594,15 @@ export const AdminTenantsPage: React.FC = () => {
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                           t.status === "active"
-                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                            : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                            : "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30"
                         }`}
                       >
                         {t.status}
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4 text-[11px] text-slate-400">
+                    <td className="py-3.5 px-4 text-[11px] text-slate-500 dark:text-slate-400">
                       {new Date(t.created_at).toLocaleDateString()}
                     </td>
 
@@ -612,19 +612,21 @@ export const AdminTenantsPage: React.FC = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => handleEnterWorkspace(t)}
-                          className="h-8 px-2.5 text-[11px] bg-indigo-950/40 text-indigo-300 border-indigo-800/40"
+                          className="h-8 px-2.5 text-[11px] bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/40"
                         >
                           Workspace
                         </Button>
                         <button
                           onClick={() => handleOpenEdit(t)}
-                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors"
+                          title="Edit"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteTenant(t)}
-                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/50 text-slate-400 hover:text-rose-400 transition-colors"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/50 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 transition-colors"
+                          title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -643,38 +645,37 @@ export const AdminTenantsPage: React.FC = () => {
         isOpen={isOnboardModalOpen}
         onClose={() => setIsOnboardModalOpen(false)}
         title={
-          <div className="flex items-center gap-2 text-white">
-            <Building2 className="w-5 h-5 text-indigo-400" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <Building2 className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
             <span>Onboard New Institution</span>
           </div>
         }
         description="Provision a new isolated SaaS tenant, initialize core roles, and set up the default administrator account."
-        className="bg-slate-900 border-slate-800 text-slate-100 max-w-2xl"
         size="lg"
       >
         <form onSubmit={handleOnboardSubmit} className="space-y-4 pt-2">
           {actionError && (
-            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 dark:text-rose-400" />
               <span>{actionError}</span>
             </div>
           )}
 
           {actionSuccess && (
-            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500 dark:text-emerald-400" />
               <span>{actionSuccess}</span>
             </div>
           )}
 
           {/* Institution Info */}
-          <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
               Institution Details
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Institution Display Name *</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Institution Display Name *</label>
                 <input
                   type="text"
                   required
@@ -690,40 +691,40 @@ export const AdminTenantsPage: React.FC = () => {
                     }))
                   }}
                   placeholder="e.g. Oxford Cambridge Academy"
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">URL Subdomain / Slug (Optional)</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">URL Subdomain / Slug (Optional)</label>
                 <input
                   type="text"
                   value={onboardForm.slug}
                   onChange={(e) => setOnboardForm({ ...onboardForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })}
                   placeholder="e.g. oxford-cambridge"
-                  className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-slate-900 border border-slate-800 text-indigo-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-indigo-600 dark:text-indigo-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Legal Organization Name</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Legal Organization Name</label>
                 <input
                   type="text"
                   value={onboardForm.legal_name}
                   onChange={(e) => setOnboardForm({ ...onboardForm, legal_name: e.target.value })}
                   placeholder="e.g. Oxford Cambridge Education Ltd."
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Institution Type</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Institution Type</label>
                 <select
                   value={onboardForm.institution_type}
                   onChange={(e) => setOnboardForm({ ...onboardForm, institution_type: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
                   <option value="school">K-12 School</option>
                   <option value="university">University</option>
@@ -733,11 +734,11 @@ export const AdminTenantsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">SaaS Plan Tier</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">SaaS Plan Tier</label>
                 <select
                   value={onboardForm.subscription_plan}
                   onChange={(e) => setOnboardForm({ ...onboardForm, subscription_plan: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
                   <option value="Enterprise">Enterprise ($999/mo)</option>
                   <option value="Professional">Professional ($499/mo)</option>
@@ -746,11 +747,11 @@ export const AdminTenantsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Base Currency</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Base Currency</label>
                 <select
                   value={onboardForm.currency}
                   onChange={(e) => setOnboardForm({ ...onboardForm, currency: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
                   <option value="USD">USD ($)</option>
                   <option value="EUR">EUR (€)</option>
@@ -764,95 +765,95 @@ export const AdminTenantsPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Contact Email</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
                 <input
                   type="email"
                   value={onboardForm.contact_email}
                   onChange={(e) => setOnboardForm({ ...onboardForm, contact_email: e.target.value })}
                   placeholder="contact@institution.edu"
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Contact Phone</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Phone</label>
                 <input
                   type="tel"
                   value={onboardForm.contact_phone}
                   onChange={(e) => setOnboardForm({ ...onboardForm, contact_phone: e.target.value })}
                   placeholder="+1 (800) 234-5678"
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
           {/* Provision Initial Admin User */}
-          <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5" /> Initial Administrator Account (Optional)
             </span>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
               Provide credentials to instantly create and bind the primary institution director/admin.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Admin Email</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Admin Email</label>
                 <input
                   type="email"
                   value={onboardForm.admin_email}
                   onChange={(e) => setOnboardForm({ ...onboardForm, admin_email: e.target.value })}
                   placeholder="principal@institution.edu"
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Admin Password</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Admin Password</label>
                 <input
                   type="password"
                   minLength={8}
                   value={onboardForm.admin_password}
                   onChange={(e) => setOnboardForm({ ...onboardForm, admin_password: e.target.value })}
                   placeholder="Min 8 characters"
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">First Name</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
                 <input
                   type="text"
                   value={onboardForm.admin_first_name}
                   onChange={(e) => setOnboardForm({ ...onboardForm, admin_first_name: e.target.value })}
                   placeholder="e.g. Principal"
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Last Name</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
                 <input
                   type="text"
                   value={onboardForm.admin_last_name}
                   onChange={(e) => setOnboardForm({ ...onboardForm, admin_last_name: e.target.value })}
                   placeholder="e.g. Director"
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsOnboardModalOpen(false)}
-              className="bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800"
+              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Cancel
             </Button>
@@ -868,57 +869,57 @@ export const AdminTenantsPage: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         title={
-          <div className="flex items-center gap-2 text-white">
-            <Edit3 className="w-5 h-5 text-indigo-400" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <Edit3 className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
             <span>Configure Institution: {selectedTenant?.name}</span>
           </div>
         }
         description="Update operational settings, currency parameters, and subscription plan tier."
-        className="bg-slate-900 border-slate-800 text-slate-100 max-w-lg"
+        size="md"
       >
         <form onSubmit={handleEditSubmit} className="space-y-4 pt-2">
           {actionError && (
-            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 dark:text-rose-400" />
               <span>{actionError}</span>
             </div>
           )}
 
           {actionSuccess && (
-            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500 dark:text-emerald-400" />
               <span>{actionSuccess}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Display Name</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Display Name</label>
             <input
               type="text"
               required
               value={editForm.name}
               onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Legal Title</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Legal Title</label>
             <input
               type="text"
               value={editForm.legal_name}
               onChange={(e) => setEditForm({ ...editForm, legal_name: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">SaaS Plan Tier</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">SaaS Plan Tier</label>
               <select
                 value={editForm.subscription_reference}
                 onChange={(e) => setEditForm({ ...editForm, subscription_reference: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               >
                 <option value="Enterprise">Enterprise</option>
                 <option value="Professional">Professional</option>
@@ -927,11 +928,11 @@ export const AdminTenantsPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Status</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Status</label>
               <select
                 value={editForm.status}
                 onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               >
                 <option value="active">Active</option>
                 <option value="suspended">Suspended</option>
@@ -943,32 +944,32 @@ export const AdminTenantsPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Contact Email</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
               <input
                 type="email"
                 value={editForm.contact_email}
                 onChange={(e) => setEditForm({ ...editForm, contact_email: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Contact Phone</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Phone</label>
               <input
                 type="tel"
                 value={editForm.contact_phone}
                 onChange={(e) => setEditForm({ ...editForm, contact_phone: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsEditModalOpen(false)}
-              className="bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800"
+              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Cancel
             </Button>

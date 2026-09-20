@@ -21,6 +21,7 @@ import { LearningPage } from "../../features/learning/LearningPage"
 import { ReportsPage } from "../../features/reports/ReportsPage"
 import { SettingsPage } from "../../features/settings/SettingsPage"
 import { AuditLogsPage } from "../../features/audit/AuditLogsPage"
+import { InstitutionUsersPage } from "../../features/users/InstitutionUsersPage"
 
 // Platform SuperAdmin Console Pages
 import { AdminRoute } from "../../features/admin/AdminRoute"
@@ -119,6 +120,7 @@ export const router = createBrowserRouter([
           { path: "learning", element: <LearningPage /> },
           { path: "reports", element: <ReportsPage /> },
           { path: "settings", element: <SettingsPage /> },
+          { path: "users", element: <InstitutionUsersPage /> },
           { path: "audit-logs", element: <AuditLogsPage /> },
         ]
       }

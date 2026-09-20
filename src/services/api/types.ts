@@ -55,10 +55,35 @@ export interface AuthCheckResponse {
   data?: {
     user: ApiUser
     role: string
+    is_institution_superadmin?: boolean
     active_tenant: ApiTenant | null
     permissions: string[]
   }
   message?: string
+}
+
+export interface CreateInstitutionUserRequest {
+  email: string
+  first_name: string
+  last_name: string
+  password?: string
+  phone_number?: string
+  role_code?: string
+  permissions?: string[]
+  designation?: string
+  department_id?: string
+  employment_type?: string
+}
+
+export interface UpdateInstitutionUserRequest {
+  first_name?: string
+  last_name?: string
+  phone_number?: string
+  status?: 'active' | 'suspended' | 'invited' | 'inactive'
+  role_code?: string
+  permissions?: string[]
+  designation?: string
+  department_id?: string
 }
 
 export interface ApiResponse<T = any> {
