@@ -33,6 +33,15 @@ import { AdminSubscriptionsPage } from "../../features/admin/AdminSubscriptionsP
 import { AdminAuditLogsPage } from "../../features/admin/AdminAuditLogsPage"
 import { AdminSystemPage } from "../../features/admin/AdminSystemPage"
 
+// Student Academic Portal Pages
+import { StudentLayout } from "../../features/student-portal/StudentLayout"
+import { StudentDashboardPage } from "../../features/student-portal/StudentDashboardPage"
+import { StudentTimetablePage } from "../../features/student-portal/StudentTimetablePage"
+import { StudentAttendancePage } from "../../features/student-portal/StudentAttendancePage"
+import { StudentGradesPage } from "../../features/student-portal/StudentGradesPage"
+import { StudentFeesPage } from "../../features/student-portal/StudentFeesPage"
+import { StudentAITutorPage } from "../../features/student-portal/StudentAITutorPage"
+
 import { Button } from "../../components/ui/Button"
 import { AlertTriangle, Home } from "lucide-react"
 
@@ -126,6 +135,26 @@ export const router = createBrowserRouter([
       }
     ]
   },
+
+  // Student Academic Portal (Dedicated Portal for Learners)
+  {
+    path: "/student",
+    element: <StudentLayout />,
+    errorElement: <NotFoundPage />,
+    children: [
+      { index: true, element: <Navigate to="/student/dashboard" replace /> },
+      { path: "dashboard", element: <StudentDashboardPage /> },
+      { path: "timetable", element: <StudentTimetablePage /> },
+      { path: "attendance", element: <StudentAttendancePage /> },
+      { path: "grades", element: <StudentGradesPage /> },
+      { path: "fees", element: <StudentFeesPage /> },
+      { path: "ai-tutor", element: <StudentAITutorPage /> },
+    ]
+  },
+
+  // Direct Conveniences & Redirects
+  { path: "/login", element: <Navigate to="/auth/login" replace /> },
+  { path: "/dashboard", element: <Navigate to="/app/dashboard" replace /> },
 
   // Catch-all
   {

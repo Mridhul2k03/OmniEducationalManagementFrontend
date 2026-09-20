@@ -17,7 +17,6 @@ import { useTheme } from "../../app/providers/ThemeProvider"
 import { Button } from "../ui/Button"
 import { Badge } from "../ui/Badge"
 import { Modal } from "../ui/Modal"
-import { BackendStatusBadge } from "../BackendStatusBadge"
 
 interface NavbarProps {
   onOpenMobileMenu: () => void
@@ -62,14 +61,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu, onOpenCommandP
 
         {/* Middle / Right Side Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Live Backend Connection Indicator */}
-          <BackendStatusBadge />
-
           {/* SuperAdmin Quick Switcher */}
           {Boolean(user?.is_superuser) && (
             <Link
               to="/admin/dashboard"
-              className="hidden sm:inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-indigo-500/40 bg-indigo-600 text-white hover:bg-indigo-500 text-[11px] font-bold shadow-sm shadow-indigo-600/25 transition-all"
+              className="hidden sm:inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-[#3F72AF]/40 bg-[#3F72AF] text-white hover:bg-[#2d568c] text-[11px] font-bold shadow-sm shadow-[#3F72AF]/25 transition-all"
               title="Open SaaS Platform SuperAdmin Control Console"
             >
               <Shield className="w-3.5 h-3.5" />
@@ -85,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu, onOpenCommandP
             className="hidden md:inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-slate-200/80 bg-slate-50 hover:bg-slate-100 dark:border-slate-700/70 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-[11px] font-medium text-slate-600 dark:text-slate-300 transition-colors shadow-2xs"
             title="Open Interactive Swagger API Documentation"
           >
-            <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
+            <BookOpen className="w-3.5 h-3.5 text-[#3F72AF]" />
             <span>API Docs</span>
             <ExternalLink className="w-2.5 h-2.5 opacity-60" />
           </a>
@@ -103,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu, onOpenCommandP
           </button>
 
           {/* Active Institutional Identity Badge */}
-          <div className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200/80 bg-slate-50/80 dark:border-slate-700/70 dark:bg-slate-800/80 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs">
+          <div className="flex items-center gap-2 h-9 px-3 rounded-lg border border-[#DBE2EF] bg-[#F9F7F7] dark:border-slate-700/70 dark:bg-slate-800/80 text-xs font-semibold text-[#112D4E] dark:text-slate-300 shadow-2xs">
             <div
               className="w-5 h-5 rounded-md flex items-center justify-center text-white text-[10px] font-bold shrink-0 shadow-xs"
               style={{ backgroundColor: tenant.primaryColor }}

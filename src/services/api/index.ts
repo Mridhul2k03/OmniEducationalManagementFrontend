@@ -14,10 +14,15 @@ import { CommunicationsService } from "./communications"
 import { AuditService } from "./audit"
 import { PlatformAdminService } from "./platformAdmin"
 import { InstitutionUsersService, RolesService, PermissionsService } from "./institutionUsers"
+import { StudentPortalService } from "./studentPortal"
+import { AIService } from "./ai"
 
 export * from "./types"
 export * from "./client"
 export * from "./institutionUsers"
+export * from "./studentPortal"
+export * from "./ai"
+export * from "./tenants"
 
 export class ApiService extends BaseApiClient {
   public health = {
@@ -55,6 +60,8 @@ export class ApiService extends BaseApiClient {
   public institutionUsers = new InstitutionUsersService(this)
   public roles = new RolesService(this)
   public permissions = new PermissionsService(this)
+  public studentPortal = new StudentPortalService(this)
+  public ai = new AIService(this)
 }
 
 export const api = new ApiService()

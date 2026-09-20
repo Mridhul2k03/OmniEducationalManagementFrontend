@@ -8,16 +8,16 @@ export const PublicLayout: React.FC = () => {
   const { theme, setTheme } = useTheme()
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
+    <div className="min-h-screen flex flex-col bg-[#F9F7F7] dark:bg-slate-950 text-[#112D4E] dark:text-slate-100 font-sans">
       {/* Public Navbar */}
-      <header className="sticky top-0 z-30 flex h-18 items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md px-6 lg:px-12">
+      <header className="sticky top-0 z-30 flex h-18 items-center justify-between border-b border-[#DBE2EF] dark:border-slate-800 bg-[#F9F7F7]/90 dark:bg-slate-950/80 backdrop-blur-md px-6 lg:px-12">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-indigo-500/20">
+          <div className="w-9 h-9 rounded-xl bg-linear-to-br from-[#3F72AF] to-[#112D4E] text-white flex items-center justify-center font-bold text-lg shadow-md shadow-[#3F72AF]/20">
             Ω
           </div>
           <div>
             <span className="text-base font-bold tracking-tight">OMNI Edu</span>
-            <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold ml-1.5 px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/50">
+            <span className="text-xs text-[#112D4E] dark:text-indigo-400 font-semibold ml-1.5 px-2 py-0.5 rounded-full bg-[#DBE2EF] dark:bg-indigo-950/50">
               SaaS
             </span>
           </div>

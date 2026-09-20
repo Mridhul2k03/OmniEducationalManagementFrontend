@@ -68,6 +68,20 @@ export interface User {
   is_superuser?: boolean
   is_staff?: boolean
   is_institution_superadmin?: boolean
+  profile_type?: 'student' | 'staff' | 'admin'
+  student_profile?: {
+    id: string
+    admission_number: string
+    class_cohort_name?: string
+    section_name?: string
+  }
+  staff_profile?: {
+    id: string
+    employee_id: string
+    designation?: string
+    department_name?: string
+  }
+  subscription_plan?: string
 }
 
 export interface InstitutionUser {

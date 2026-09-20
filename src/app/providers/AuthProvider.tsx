@@ -51,9 +51,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (checkResult.authenticated && checkResult.data?.user) {
         const authData = checkResult.data
         const isInstSuper = Boolean(authData.is_institution_superadmin || authData.user.is_superuser || authData.role === "institution_super_admin" || authData.role === "super_admin")
-        const roleCode = authData.user.is_superuser
-          ? "super_admin"
-          : (authData.role as Role) || (isInstSuper ? "institution_super_admin" : "faculty")
+        let roleCode: Role = "faculty"
+        if (authData.user.is_superuser) {
+          roleCode = "super_admin"
+        } else if (authData.profile_type === "student" || authData.role === "student") {
+          roleCode = "student"
+        } else if (isInstSuper) {
+          roleCode = "institution_super_admin"
+        } else if (authData.role) {
+          roleCode = authData.role as Role
+        }
 
         const liveUser: User = {
           id: authData.user.id,
@@ -65,6 +72,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           is_superuser: !!authData.user.is_superuser,
           is_staff: !!authData.user.is_staff,
           is_institution_superadmin: isInstSuper,
+          profile_type: authData.profile_type || (roleCode === "student" ? "student" : "admin"),
+          student_profile: authData.student_profile,
+          staff_profile: authData.staff_profile,
+          subscription_plan: authData.subscription_plan || "professional",
         }
 
         if (authData.active_tenant?.id) {
@@ -98,9 +109,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (checkResult.authenticated && checkResult.data?.user) {
           const authData = checkResult.data
           const isInstSuper = Boolean(authData.is_institution_superadmin || authData.user.is_superuser || authData.role === "institution_super_admin" || authData.role === "super_admin")
-          const roleCode = authData.user.is_superuser
-            ? "super_admin"
-            : (authData.role as Role) || (isInstSuper ? "institution_super_admin" : "faculty")
+          let roleCode: Role = "faculty"
+          if (authData.user.is_superuser) {
+            roleCode = "super_admin"
+          } else if (authData.profile_type === "student" || authData.role === "student" || loginRes.profile_type === "student" || loginRes.role === "student") {
+            roleCode = "student"
+          } else if (isInstSuper) {
+            roleCode = "institution_super_admin"
+          } else if (authData.role) {
+            roleCode = authData.role as Role
+          }
 
           const authenticatedUser: User = {
             id: authData.user.id,
@@ -112,6 +130,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             is_superuser: !!authData.user.is_superuser,
             is_staff: !!authData.user.is_staff,
             is_institution_superadmin: isInstSuper,
+            profile_type: authData.profile_type || loginRes.profile_type || (roleCode === "student" ? "student" : "admin"),
+            student_profile: authData.student_profile || loginRes.student_profile,
+            staff_profile: authData.staff_profile || loginRes.staff_profile,
+            subscription_plan: authData.subscription_plan || loginRes.subscription_plan || "professional",
           }
 
           if (authData.active_tenant?.id) {
@@ -122,17 +144,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         // Fallback with login response data
-        const fallbackRole = loginRes.user?.is_superuser ? "super_admin" : "institution_super_admin"
+        const isStudentLogin = loginRes.profile_type === "student" || loginRes.role === "student"
+        const fallbackRole = loginRes.user?.is_superuser
+          ? "super_admin"
+          : (isStudentLogin ? "student" : "institution_super_admin")
         const fallbackUser: User = {
           id: loginRes.user.id,
           name: loginRes.user.full_name || loginRes.user.email,
           email: loginRes.user.email,
           role: fallbackRole as Role,
           tenantId: loginRes.active_tenant?.id || "oxford-crest",
-          permissions: ["*"],
+          permissions: isStudentLogin ? ["student_portal"] : ["*"],
           is_superuser: !!loginRes.user?.is_superuser,
           is_staff: !!loginRes.user?.is_staff,
-          is_institution_superadmin: true,
+          is_institution_superadmin: !isStudentLogin && !loginRes.user?.is_superuser,
+          profile_type: loginRes.profile_type || (isStudentLogin ? "student" : "admin"),
+          student_profile: loginRes.student_profile,
+          staff_profile: loginRes.staff_profile,
+          subscription_plan: loginRes.subscription_plan || "professional",
         }
         if (loginRes.active_tenant?.id) {
           api.setActiveTenantId(loginRes.active_tenant.id)

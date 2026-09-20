@@ -1,6 +1,7 @@
 import React, { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../../app/providers/AuthProvider"
+import { api } from "../../services/api"
 import { Input } from "../../components/ui/Input"
 import { Button } from "../../components/ui/Button"
 import { Lock, Mail, ArrowRight, AlertCircle, ShieldCheck } from "lucide-react"
@@ -27,7 +28,16 @@ export const LoginPage: React.FC = () => {
     try {
       const success = await login(email.trim(), password)
       if (success) {
-        navigate("/app/dashboard")
+        // Inspect session role / profile to direct to student portal or admin console
+        const check = await api.auth.check()
+        const isStudent = check.data?.profile_type === "student" || check.data?.role === "student"
+        if (isStudent) {
+          navigate("/student/dashboard")
+        } else if (check.data?.user?.is_superuser) {
+          navigate("/admin/dashboard")
+        } else {
+          navigate("/app/dashboard")
+        }
       } else {
         setErrorMessage("Authentication failed. Please verify your credentials.")
       }

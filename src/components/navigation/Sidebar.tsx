@@ -17,11 +17,16 @@ import {
   ChevronRight,
   ShieldAlert,
   ScrollText,
-  UserCheck
+  UserCheck,
+  Sparkles,
+  Zap,
+  Lock
 } from "lucide-react"
 import { useTenant } from "../../app/providers/TenantProvider"
 import { useAuth } from "../../app/providers/AuthProvider"
 import { cn } from "../../lib/utils"
+import { useSubscriptionPlan } from "../../features/subscription/useSubscriptionPlan"
+import { PlanGateModal } from "../../features/subscription/PlanGateModal"
 
 interface SidebarProps {
   isMobileOpen: boolean
@@ -32,12 +37,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
   const { tenant, t } = useTenant()
   const { user, logout, can } = useAuth()
   const navigate = useNavigate()
+  const {
+    currentPlanId,
+    activePlan,
+    availablePlans,
+    upgradeModalOpen,
+    setUpgradeModalOpen,
+    upgradeTo,
+    upgrading,
+  } = useSubscriptionPlan()
 
   const navGroups = [
     {
       group: "Overview",
       items: [
         { label: "Dashboard", path: "/app/dashboard", icon: LayoutDashboard, permission: "view:all" },
+        { label: "Student Portal (Live)", path: "/student/dashboard", icon: GraduationCap, permission: "view:all" },
         { label: "Announcements", path: "/app/communications", icon: Megaphone, permission: "view:all" },
       ]
     },
@@ -149,8 +164,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                           cn(
                             "flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group",
                             isActive
-                              ? "bg-indigo-50 text-indigo-700 font-semibold dark:bg-indigo-950/50 dark:text-indigo-300"
-                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
+                              ? "bg-[#DBE2EF] text-[#112D4E] font-semibold dark:bg-indigo-950/50 dark:text-indigo-300"
+                              : "text-slate-600 hover:bg-[#DBE2EF]/40 hover:text-[#112D4E] dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
                           )
                         }
                       >
@@ -169,18 +184,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
         {/* User Profile Footer */}
         <div className="p-3 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 space-y-2">
+          {/* Subscription Tier Card */}
+          <div className="p-2.5 rounded-xl bg-[#DBE2EF]/60 dark:bg-slate-800/80 border border-[#DBE2EF] dark:border-slate-700/80 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-[#3F72AF] text-white">
+                <Sparkles className="w-3.5 h-3.5" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Plan</span>
+                <span className="text-xs font-bold text-[#112D4E] dark:text-white capitalize truncate max-w-[90px]">
+                  {activePlan?.name?.split(" ")[0] || "Professional"}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setUpgradeModalOpen(true)}
+              className="text-[10px] font-bold text-[#3F72AF] hover:text-[#112D4E] dark:hover:text-blue-300 uppercase tracking-wider px-2 py-1 rounded bg-white dark:bg-slate-700 border border-[#DBE2EF] dark:border-slate-600 shadow-xs"
+            >
+              Plans
+            </button>
+          </div>
+
           {/* SuperAdmin Console Direct Link */}
           {Boolean(user?.is_superuser) && (
             <NavLink
               to="/admin/dashboard"
               onClick={onCloseMobile}
-              className="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-indigo-500/40 text-indigo-300 hover:bg-slate-800 hover:text-white transition-all text-xs font-semibold shadow-md group"
+              className="flex items-center justify-between p-2 rounded-xl bg-[#112D4E] border border-[#3F72AF]/40 text-[#DBE2EF] hover:bg-[#1a3d66] hover:text-white transition-all text-xs font-semibold shadow-md group"
             >
               <div className="flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />
+                <ShieldAlert className="w-4 h-4 text-[#3F72AF] group-hover:scale-110 transition-transform" />
                 <span>SuperAdmin Console</span>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-indigo-400 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#3F72AF] group-hover:translate-x-0.5 transition-transform" />
             </NavLink>
           )}
 
@@ -215,6 +251,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
           </div>
         </div>
       </aside>
+
+      {/* Plan Upgrade Modal */}
+      <PlanGateModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        currentPlanId={currentPlanId}
+        availablePlans={availablePlans}
+        onUpgrade={upgradeTo}
+        isUpgrading={upgrading}
+      />
     </>
   )
 }

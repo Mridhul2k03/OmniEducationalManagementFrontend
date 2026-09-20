@@ -26,7 +26,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   className,
 }) => {
   const colorMap = {
-    indigo: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/50",
+    indigo: "bg-[#DBE2EF] text-[#3F72AF] dark:bg-indigo-950/50 dark:text-indigo-400 border-[#DBE2EF] dark:border-indigo-900/50",
     emerald: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50",
     amber: "bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 border-amber-100 dark:border-amber-900/50",
     violet: "bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 border-purple-100 dark:border-purple-900/50",
@@ -36,7 +36,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 dark:border-slate-800/80 dark:bg-slate-900/90",
+        "relative overflow-hidden rounded-xl border border-[#DBE2EF]/80 bg-white p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 dark:border-slate-800/80 dark:bg-slate-900/90",
         className
       )}
     >
@@ -45,7 +45,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
           <p className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
             {title}
           </p>
-          <h4 className="mt-1.5 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h4 className="mt-1.5 text-2xl font-bold tracking-tight text-[#112D4E] dark:text-slate-100">
             {value}
           </h4>
         </div>

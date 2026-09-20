@@ -30,6 +30,21 @@ export interface LoginResponse {
   user: ApiUser
   accessible_tenants: ApiTenant[]
   active_tenant?: ApiTenant
+  role?: string
+  profile_type?: 'student' | 'staff' | 'admin'
+  student_profile?: {
+    id: string
+    admission_number: string
+    class_cohort_name?: string
+    section_name?: string
+  }
+  staff_profile?: {
+    id: string
+    employee_id: string
+    designation?: string
+    department_name?: string
+  }
+  subscription_plan?: string
 }
 
 export interface MeResponse {
@@ -56,6 +71,20 @@ export interface AuthCheckResponse {
     user: ApiUser
     role: string
     is_institution_superadmin?: boolean
+    profile_type?: 'student' | 'staff' | 'admin'
+    student_profile?: {
+      id: string
+      admission_number: string
+      class_cohort_name?: string
+      section_name?: string
+    }
+    staff_profile?: {
+      id: string
+      employee_id: string
+      designation?: string
+      department_name?: string
+    }
+    subscription_plan?: string
     active_tenant: ApiTenant | null
     permissions: string[]
   }

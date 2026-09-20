@@ -4,26 +4,57 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --color-slate-50: #F9F7F7;
+  --color-slate-100: #DBE2EF;
+  --color-slate-200: #cad5e7;
+  --color-slate-300: #a7bddb;
+  --color-slate-400: #6d8eb9;
+  --color-slate-500: #466e9c;
+  --color-slate-600: #30547d;
+  --color-slate-700: #213f64;
+  --color-slate-800: #172f4e;
+  --color-slate-900: #112D4E;
+  --color-slate-950: #0a1b32;
+
+  --color-indigo-50: #f2f5fa;
+  --color-indigo-100: #DBE2EF;
+  --color-indigo-200: #b8cae4;
+  --color-indigo-300: #8eaad2;
+  --color-indigo-400: #5f8bbb;
+  --color-indigo-500: #477bb7;
+  --color-indigo-600: #3F72AF;
+  --color-indigo-700: #2d568c;
+  --color-indigo-800: #1e3e68;
+  --color-indigo-900: #112D4E;
+  --color-indigo-950: #0a1b30;
+
+  --color-palette-light: #F9F7F7;
+  --color-palette-secondary: #DBE2EF;
+  --color-palette-primary: #3F72AF;
+  --color-palette-dark: #112D4E;
+}
+
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #F9F7F7;
+  --foreground: #112D4E;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #112D4E;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #4f46e5;
+  --popover-foreground: #112D4E;
+  --primary: #3F72AF;
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #1e293b;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
+  --secondary: #DBE2EF;
+  --secondary-foreground: #112D4E;
+  --muted: #DBE2EF;
+  --muted-foreground: #3F72AF;
+  --accent: #DBE2EF;
+  --accent-foreground: #112D4E;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #6366f1;
+  --border: #DBE2EF;
+  --input: #DBE2EF;
+  --ring: #3F72AF;
   --radius: 0.5rem;
 }
 

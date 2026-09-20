@@ -31,7 +31,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           id={selectId}
           ref={ref}
           className={cn(
-            "flex h-9.5 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-100",
+            "flex h-9.5 w-full rounded-lg border border-[#DBE2EF] bg-white px-3 py-2 text-sm text-[#112D4E] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3F72AF] focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-100",
             error && "border-rose-500 focus-visible:ring-rose-500",
             className
           )}
