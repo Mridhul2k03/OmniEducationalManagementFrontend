@@ -7,6 +7,7 @@ import { AppLayout } from "../layouts/AppLayout"
 
 import { LandingPage } from "../../features/public/LandingPage"
 import { LoginPage } from "../../features/auth/LoginPage"
+import { StudentAuthPage } from "../../features/auth/StudentAuthPage"
 import { ForgotPasswordPage } from "../../features/auth/ForgotPasswordPage"
 import { DashboardPage } from "../../features/dashboard/DashboardPage"
 import { StudentsPage } from "../../features/students/StudentsPage"
@@ -41,27 +42,41 @@ import { StudentAttendancePage } from "../../features/student-portal/StudentAtte
 import { StudentGradesPage } from "../../features/student-portal/StudentGradesPage"
 import { StudentFeesPage } from "../../features/student-portal/StudentFeesPage"
 import { StudentAITutorPage } from "../../features/student-portal/StudentAITutorPage"
+import { PlansPage } from "../../features/subscription/PlansPage"
 
 import { Button } from "../../components/ui/Button"
 import { AlertTriangle, Home } from "lucide-react"
+import { useRouteError } from "react-router-dom"
 
-// 404 Not Found Page Component
-const NotFoundPage = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
-    <div className="p-4 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 mb-4">
-      <AlertTriangle className="w-12 h-12" />
+// 404 Not Found / Route Error Component
+const NotFoundPage = () => {
+  const routeError = useRouteError() as any
+  if (routeError) {
+    console.error("Router error caught in NotFoundPage:", routeError)
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+      <div className="p-4 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 mb-4">
+        <AlertTriangle className="w-12 h-12" />
+      </div>
+      <h1 className="text-3xl font-extrabold tracking-tight">404 — Page Not Found</h1>
+      <p className="mt-2 text-sm text-slate-500 max-w-md">
+        The requested educational module or page could not be located in this tenant workspace.
+      </p>
+      {routeError && (
+        <p className="mt-2 text-xs text-rose-500 font-mono">
+          {routeError?.message || String(routeError)}
+        </p>
+      )}
+      <a href="/app/dashboard" className="mt-6">
+        <Button leftIcon={<Home className="w-4 h-4" />}>
+          Return to Dashboard
+        </Button>
+      </a>
     </div>
-    <h1 className="text-3xl font-extrabold tracking-tight">404 — Page Not Found</h1>
-    <p className="mt-2 text-sm text-slate-500 max-w-md">
-      The requested educational module or page could not be located in this tenant workspace.
-    </p>
-    <a href="/app/dashboard" className="mt-6">
-      <Button leftIcon={<Home className="w-4 h-4" />}>
-        Return to Dashboard
-      </Button>
-    </a>
-  </div>
-)
+  )
+}
 
 export const router = createBrowserRouter([
   // Public Landing Layout
@@ -131,6 +146,8 @@ export const router = createBrowserRouter([
           { path: "settings", element: <SettingsPage /> },
           { path: "users", element: <InstitutionUsersPage /> },
           { path: "audit-logs", element: <AuditLogsPage /> },
+          { path: "plans", element: <PlansPage /> },
+          { path: "subscription", element: <Navigate to="/app/plans" replace /> },
         ]
       }
     ]
@@ -151,6 +168,12 @@ export const router = createBrowserRouter([
       { path: "ai-tutor", element: <StudentAITutorPage /> },
     ]
   },
+
+  // Dedicated Student Authentication & Self-Registration
+  { path: "/student/login", element: <StudentAuthPage />, errorElement: <NotFoundPage /> },
+  { path: "/student/register", element: <StudentAuthPage />, errorElement: <NotFoundPage /> },
+  { path: "/student-login", element: <Navigate to="/student/login" replace /> },
+  { path: "/student-register", element: <Navigate to="/student/register" replace /> },
 
   // Direct Conveniences & Redirects
   { path: "/login", element: <Navigate to="/auth/login" replace /> },

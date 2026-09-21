@@ -97,11 +97,17 @@ export const DashboardPage: React.FC = () => {
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-white/20 text-white backdrop-blur-xs">
-                {tenant.name}
+                {tenant?.name || "Institution"}
               </span>
-              <span className="text-xs text-indigo-200">
-                • {tenant.subscriptionPlan} Tier
-              </span>
+              <button
+                type="button"
+                onClick={() => navigate("/app/plans")}
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-amber-400/25 hover:bg-amber-400/35 text-amber-200 border border-amber-300/30 backdrop-blur-xs transition-colors cursor-pointer"
+              >
+                <Sparkles className="w-3 h-3 text-amber-300" />
+                <span>{tenant?.subscriptionPlan || "Professional"} Plan</span>
+                <ArrowUpRight className="w-3 h-3" />
+              </button>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Welcome back, {user?.name || "Administrator"}
@@ -115,7 +121,17 @@ export const DashboardPage: React.FC = () => {
             <Button
               variant="secondary"
               size="sm"
+              onClick={() => navigate("/app/plans")}
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold border-0 shadow-sm"
+              leftIcon={<Sparkles className="w-4 h-4 text-slate-950" />}
+            >
+              Subscription Plans
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => navigate("/app/students?admit=true")}
+              className="bg-white/10 hover:bg-white/20 text-white border-white/20"
               leftIcon={<Plus className="w-4 h-4" />}
             >
               Admit {t("learner")}
@@ -228,6 +244,21 @@ export const DashboardPage: React.FC = () => {
               <CardTitle className="text-sm">Quick Operations</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 pt-0">
+              <button
+                type="button"
+                onClick={() => navigate("/app/plans")}
+                className="w-full p-3 rounded-xl border border-amber-300/60 dark:border-amber-700/60 bg-amber-50/50 dark:bg-amber-950/20 hover:border-amber-500 text-left transition-all flex items-center justify-between group shadow-xs"
+              >
+                <div>
+                  <p className="text-xs font-bold text-[#112D4E] dark:text-amber-200 group-hover:text-[#3F72AF] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    Subscription Plans & Quotas
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">View Starter, Professional & Enterprise tiers</p>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-amber-500 group-hover:text-[#3F72AF]" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => navigate("/app/students")}

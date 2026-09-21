@@ -3,7 +3,7 @@
  * Configured with HttpOnly cookie credentials, X-Tenant-ID headers, and automatic token refresh.
  */
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api/v1"
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8001/api/v1"
 const ACTIVE_TENANT_ID_KEY = "omni-active-tenant-id"
 
 export const unwrapList = <T = any>(res: any): T[] => {
@@ -111,7 +111,12 @@ export class BaseApiClient {
         } catch {
           errorData = { message: `Request failed with status ${response.status}` }
         }
-        throw new Error(errorData?.error?.message || errorData?.detail || errorData?.message || `HTTP ${response.status}`)
+        const err: any = new Error(
+          errorData?.error?.message || errorData?.detail || errorData?.message || `HTTP ${response.status}`
+        )
+        err.data = errorData
+        err.status = response.status
+        throw err
       }
 
       if (response.status === 204) {

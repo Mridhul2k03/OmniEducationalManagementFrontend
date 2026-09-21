@@ -13,11 +13,10 @@ import {
   AttendanceRecord, 
   AttendanceStatus 
 } from "../types"
-import { DEFAULT_TENANTS } from "./mockData"
 import { api } from "./api"
 
 class AppStorageService {
-  private tenants: Tenant[] = DEFAULT_TENANTS
+  private tenants: Tenant[] = []
   private users: User[] = []
   private students: Student[] = []
   private staff: Staff[] = []
@@ -72,20 +71,20 @@ class AppStorageService {
           admissionNumber: s.admission_number,
           firstName: s.first_name,
           lastName: s.last_name,
-          email: s.user?.email || `${s.first_name.toLowerCase()}.${s.last_name.toLowerCase()}@student.omni-edu.org`,
-          avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80`,
+          email: s.user?.email || (s.first_name ? `${s.first_name.toLowerCase()}.${s.last_name.toLowerCase()}@student.omni-edu.org` : "—"),
+          avatar: s.avatar_url || s.user?.avatar_url,
           gender: s.gender === "F" ? "female" : (s.gender === "M" ? "male" : "other"),
           dateOfBirth: s.date_of_birth,
-          gradeOrProgram: s.current_class_name || "Academic Program",
-          sectionOrBatch: s.current_section_name || "Section A",
-          enrollmentDate: s.admission_date,
+          gradeOrProgram: s.current_class_name || "—",
+          sectionOrBatch: s.current_section_name || "—",
+          enrollmentDate: s.admission_date || "",
           status: (s.status === "enrolled" ? "active" : s.status) as any,
-          guardianName: s.guardian_links?.[0]?.guardian_name || "Legal Guardian",
-          guardianRelationship: s.guardian_links?.[0]?.relationship || "Guardian",
-          guardianContact: s.guardian_links?.[0]?.phone_number || "+1 (555) 000-0000",
-          outstandingBalance: 0,
-          attendanceRate: 95,
-          gpa: 3.8,
+          guardianName: s.guardian_links?.[0]?.guardian_name || s.guardian_name || "—",
+          guardianRelationship: s.guardian_links?.[0]?.relationship || "—",
+          guardianContact: s.guardian_links?.[0]?.phone_number || s.guardian_contact || "—",
+          outstandingBalance: Number(s.outstanding_balance ?? 0),
+          attendanceRate: Number(s.attendance_rate ?? 0),
+          gpa: Number(s.gpa ?? 0.0),
         }))
       }
 
@@ -98,15 +97,15 @@ class AppStorageService {
           firstName: st.full_name?.split(" ")[0] || "Staff",
           lastName: st.full_name?.split(" ").slice(1).join(" ") || "Member",
           email: st.email || "",
-          avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80",
+          avatar: st.avatar_url || st.user?.avatar_url,
           roleTitle: st.designation || "Faculty Member",
-          department: st.department_name || "Academics",
-          designation: st.designation || "Faculty",
-          joiningDate: st.joined_date || new Date().toISOString().split("T")[0],
+          department: st.department_name || "—",
+          designation: st.designation || "—",
+          joiningDate: st.joined_date || "",
           status: st.status === "active" ? "active" : "on_leave",
-          subjects: ["Core Curriculum"],
-          phone: st.phone_number || "+1 (555) 000-0000",
-          weeklyHours: 16,
+          subjects: st.subjects || [],
+          phone: st.phone_number || "—",
+          weeklyHours: Number(st.weekly_hours || 0),
         }))
       }
 
@@ -175,91 +174,72 @@ class AppStorageService {
   public updateTenantsFromBackend(backendTenants: any[]): void {
     if (!Array.isArray(backendTenants) || backendTenants.length === 0) return
 
-    const currentTenants = [...this.tenants]
-    const updated: Tenant[] = currentTenants.map(loc => {
-      const match = backendTenants.find(bt => bt.id === loc.id || bt.slug === loc.slug || bt.slug === loc.id)
-      if (match) {
-        return {
-          ...loc,
-          id: match.id,
-          slug: match.slug || loc.slug,
-          name: match.name || loc.name,
-          currency: match.currency || loc.currency,
-          timezone: match.timezone || loc.timezone,
+    this.tenants = backendTenants.map(bt => {
+      const instType = bt.institution_type || "university_college"
+      const isSchool = instType === "school" || instType === "k12_school"
+      const isCoaching = instType === "coaching" || instType === "coaching_institute"
+
+      return {
+        id: bt.id,
+        slug: bt.slug || bt.id,
+        name: bt.name,
+        code: bt.code || (bt.slug ? bt.slug.substring(0, 4).toUpperCase() : "INST"),
+        type: (instType as any) || "university_college",
+        tagline: bt.tagline || "",
+        primaryColor: bt.primary_color || (isSchool ? "#059669" : (isCoaching ? "#d97706" : "#3F72AF")),
+        currency: bt.currency || "USD",
+        timezone: bt.timezone || "UTC",
+        address: bt.address || "",
+        subscriptionPlan: bt.subscription_reference || bt.subscription_plan || "Enterprise",
+        subscriptionStatus: bt.subscription_status || "active",
+        subscriptionExpiry: bt.subscription_expiry || "",
+        maxLearners: bt.max_learners || 1000,
+        currentLearners: bt.students_count || 0,
+        terminology: isSchool ? {
+          learnerSingular: "Student",
+          learnerPlural: "Students",
+          educatorSingular: "Teacher",
+          educatorPlural: "Teachers",
+          classSingular: "Class",
+          classPlural: "Classes",
+          programSingular: "Grade",
+          programPlural: "Grades",
+          termSingular: "Term",
+          termPlural: "Terms"
+        } : (isCoaching ? {
+          learnerSingular: "Student",
+          learnerPlural: "Students",
+          educatorSingular: "Mentor",
+          educatorPlural: "Mentors",
+          classSingular: "Batch",
+          classPlural: "Batches",
+          programSingular: "Subject",
+          programPlural: "Subjects",
+          termSingular: "Session",
+          termPlural: "Sessions"
+        } : {
+          learnerSingular: "Student",
+          learnerPlural: "Students",
+          educatorSingular: "Professor",
+          educatorPlural: "Faculty",
+          classSingular: "Course",
+          classPlural: "Courses",
+          programSingular: "Program",
+          programPlural: "Programs",
+          termSingular: "Semester",
+          termPlural: "Semesters"
+        }),
+        features: {
+          onlineExams: true,
+          financeModule: true,
+          timetableGenerator: true,
+          bulkSms: true,
+          parentPortal: true
         }
       }
-      return loc
     })
 
-    backendTenants.forEach(bt => {
-      const alreadyExists = updated.some(u => u.id === bt.id || u.slug === bt.slug)
-      if (!alreadyExists) {
-        const instType = bt.institution_type || "university_college"
-        const isSchool = instType === "school" || instType === "k12_school"
-        const isCoaching = instType === "coaching" || instType === "coaching_institute"
-
-        updated.push({
-          id: bt.id,
-          slug: bt.slug || bt.id,
-          name: bt.name,
-          code: bt.slug ? bt.slug.substring(0, 4).toUpperCase() : "INST",
-          type: (instType as any) || "university_college",
-          tagline: "Educational Excellence",
-          primaryColor: isSchool ? "#059669" : (isCoaching ? "#d97706" : "#4f46e5"),
-          currency: bt.currency || "USD",
-          timezone: bt.timezone || "UTC",
-          address: bt.address || "Campus Way",
-          subscriptionPlan: bt.subscription_reference || "Enterprise",
-          subscriptionStatus: "active",
-          subscriptionExpiry: "2027-12-31",
-          maxLearners: 5000,
-          currentLearners: bt.students_count || 0,
-          terminology: isSchool ? {
-            learnerSingular: "Student",
-            learnerPlural: "Students",
-            educatorSingular: "Teacher",
-            educatorPlural: "Teachers",
-            classSingular: "Class",
-            classPlural: "Classes",
-            programSingular: "Grade",
-            programPlural: "Grades",
-            termSingular: "Term",
-            termPlural: "Terms"
-          } : (isCoaching ? {
-            learnerSingular: "Student",
-            learnerPlural: "Students",
-            educatorSingular: "Mentor",
-            educatorPlural: "Mentors",
-            classSingular: "Batch",
-            classPlural: "Batches",
-            programSingular: "Subject",
-            programPlural: "Subjects",
-            termSingular: "Session",
-            termPlural: "Sessions"
-          } : {
-            learnerSingular: "Student",
-            learnerPlural: "Students",
-            educatorSingular: "Professor",
-            educatorPlural: "Faculty",
-            classSingular: "Course",
-            classPlural: "Courses",
-            programSingular: "Program",
-            programPlural: "Programs",
-            termSingular: "Semester",
-            termPlural: "Semesters"
-          }),
-          features: {
-            onlineExams: true,
-            financeModule: true,
-            timetableGenerator: true,
-            bulkSms: true,
-            parentPortal: true
-          }
-        })
-      }
-    })
-
-    this.tenants = updated
+    this.notify()
   }
 
   // Tenants

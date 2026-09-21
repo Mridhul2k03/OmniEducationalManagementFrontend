@@ -94,11 +94,21 @@ export function useSubscriptionPlan() {
   const loadPlan = useCallback(async () => {
     try {
       const res = await api.tenants.getCurrentPlan()
-      if (res?.current_plan_id) {
-        setCurrentPlanId(res.current_plan_id)
+      // The service unwraps res.data, so res is { current_plan_id, available_plans, ... }
+      const planId = res?.current_plan_id
+      if (planId) {
+        setCurrentPlanId(planId)
       }
-      if (res?.available_plans) {
+      // available_plans is a dict keyed by lowercase plan id
+      if (res?.available_plans && typeof res.available_plans === "object" && !Array.isArray(res.available_plans)) {
         setPlans(res.available_plans)
+      } else if (res?.available_plans && Array.isArray(res.available_plans)) {
+        // Handle legacy array format by converting to dict
+        const dict: Record<string, SubscriptionPlanItem> = {}
+        for (const p of res.available_plans) {
+          if (p?.id) dict[p.id.toLowerCase()] = { ...p, id: p.id.toLowerCase() as any }
+        }
+        if (Object.keys(dict).length > 0) setPlans(dict)
       }
     } catch {
       // Keep local defaults

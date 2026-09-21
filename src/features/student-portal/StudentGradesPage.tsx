@@ -23,8 +23,8 @@ export const StudentGradesPage: React.FC = () => {
 
   const totalMarks = grades.reduce((acc, g) => acc + (g.marks_obtained || 0), 0)
   const maxMarks = grades.reduce((acc, g) => acc + (g.max_marks || 100), 0)
-  const avgPct = maxMarks > 0 ? Math.round((totalMarks / maxMarks) * 100) : 85
-  const gpa = ((avgPct / 100) * 4.0).toFixed(2)
+  const avgPct = maxMarks > 0 ? Math.round((totalMarks / maxMarks) * 100) : 0
+  const gpa = maxMarks > 0 ? ((avgPct / 100) * 4.0).toFixed(2) : "0.00"
 
   const getGradeColor = (grade: string) => {
     switch (grade) {
@@ -69,7 +69,9 @@ export const StudentGradesPage: React.FC = () => {
           <TrendingUp className="w-8 h-8 text-amber-300" />
           <div>
             <div className="text-xs text-[#DBE2EF]">Academic Status</div>
-            <div className="text-sm font-bold text-white">Dean's Honor List</div>
+            <div className="text-sm font-bold text-white">
+              {grades.length > 0 ? (avgPct >= 85 ? "Dean's Honor List" : "Satisfactory Standing") : "No Evaluations Yet"}
+            </div>
           </div>
         </div>
       </div>

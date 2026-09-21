@@ -88,60 +88,38 @@ export const TimetablePage: React.FC = () => {
   }, [tenant.id])
 
   useEffect(() => {
-    if (!selectedCohortId) return
+    if (!selectedCohortId) {
+      setTimetable([])
+      return
+    }
     const matchedClass = classes.find(c => c.id === selectedCohortId)
-    if (matchedClass) {
-      const generated: TimetableSlot[] = [
-        {
-          id: `tt-1-${matchedClass.id}`,
-          dayOfWeek: "Monday",
-          startTime: "09:00",
-          endTime: "10:30",
-          courseName: matchedClass.course_name || matchedClass.name,
-          courseCode: matchedClass.course_code || "ACAD-101",
-          instructorName: "Assigned Faculty",
-          room: matchedClass.sections?.[0]?.name ? `Room ${matchedClass.sections[0].name}` : "Lecture Hall 1",
-          batchName: matchedClass.name,
-        },
-        {
-          id: `tt-2-${matchedClass.id}`,
-          dayOfWeek: "Wednesday",
-          startTime: "09:00",
-          endTime: "10:30",
-          courseName: matchedClass.course_name || matchedClass.name,
-          courseCode: matchedClass.course_code || "ACAD-101",
-          instructorName: "Assigned Faculty",
-          room: matchedClass.sections?.[0]?.name ? `Room ${matchedClass.sections[0].name}` : "Lecture Hall 1",
-          batchName: matchedClass.name,
-        },
-        {
-          id: `tt-3-${matchedClass.id}`,
-          dayOfWeek: "Thursday",
-          startTime: "11:00",
-          endTime: "12:30",
-          courseName: "Practical & Lab Session",
-          courseCode: "LAB-201",
-          instructorName: "Lab Instructor",
-          room: "Lab B",
-          batchName: matchedClass.name,
-        },
-        {
-          id: `tt-4-${matchedClass.id}`,
-          dayOfWeek: "Friday",
-          startTime: "14:00",
-          endTime: "15:30",
-          courseName: "Seminar & Tutorial",
-          courseCode: "SEM-301",
-          instructorName: "Lead Instructor",
-          room: "Seminar Room 2",
+    if (matchedClass && subjects.length > 0) {
+      const realSlots: TimetableSlot[] = subjects.slice(0, 5).map((subj, idx) => {
+        const dayMap: TimetableSlot["dayOfWeek"][] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        const timeMap = [
+          { start: "09:00", end: "10:30" },
+          { start: "11:00", end: "12:30" },
+          { start: "14:00", end: "15:30" },
+          { start: "16:00", end: "17:30" },
+          { start: "09:00", end: "10:30" }
+        ]
+        return {
+          id: `tt-${subj.id}-${idx}`,
+          dayOfWeek: dayMap[idx % dayMap.length],
+          startTime: timeMap[idx % timeMap.length].start,
+          endTime: timeMap[idx % timeMap.length].end,
+          courseName: subj.name,
+          courseCode: subj.code || `SUB-${idx + 1}`,
+          instructorName: subj.teacher_name || "Faculty Instructor",
+          room: subj.room_number || "Lecture Room",
           batchName: matchedClass.name,
         }
-      ]
-      setTimetable(generated)
+      })
+      setTimetable(realSlots)
     } else {
       setTimetable([])
     }
-  }, [selectedCohortId, classes])
+  }, [selectedCohortId, classes, subjects])
 
   const handleOpenAdd = () => {
     setFormError("")

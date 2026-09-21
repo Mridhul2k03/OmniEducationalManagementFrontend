@@ -40,7 +40,7 @@ export const StudentLayout: React.FC = () => {
 
   const handleLogout = async () => {
     await logout()
-    navigate("/login")
+    navigate("/student/login")
   }
 
   const navItems = [

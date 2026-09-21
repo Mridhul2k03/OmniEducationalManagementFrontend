@@ -31,4 +31,26 @@ export class StudentsService {
       method: "DELETE",
     })
   }
+
+  public async listRegistrationRequests(params: { search?: string; status?: string } = {}): Promise<any[]> {
+    const query = new URLSearchParams()
+    if (params.search) query.set("search", params.search)
+    if (params.status && params.status !== "all") query.set("status", params.status)
+    const qStr = query.toString() ? `?${query.toString()}` : ""
+    const res = await this.client.request<any>(`/students/registration-requests/${qStr}`)
+    return unwrapList(res)
+  }
+
+  public async approveRegistrationRequest(id: string): Promise<any> {
+    return this.client.request(`/students/registration-requests/${id}/approve/`, {
+      method: "POST",
+    })
+  }
+
+  public async rejectRegistrationRequest(id: string, payload: { permanent?: boolean; reason?: string }): Promise<any> {
+    return this.client.request(`/students/registration-requests/${id}/reject/`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+  }
 }

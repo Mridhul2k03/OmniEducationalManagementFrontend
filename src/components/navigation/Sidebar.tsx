@@ -52,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
       group: "Overview",
       items: [
         { label: "Dashboard", path: "/app/dashboard", icon: LayoutDashboard, permission: "view:all" },
+        { label: "Subscription Plans", path: "/app/plans", icon: Sparkles, permission: "view:all" },
         { label: "Student Portal (Live)", path: "/student/dashboard", icon: GraduationCap, permission: "view:all" },
         { label: "Announcements", path: "/app/communications", icon: Megaphone, permission: "view:all" },
       ]
@@ -185,7 +186,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
         {/* User Profile Footer */}
         <div className="p-3 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 space-y-2">
           {/* Subscription Tier Card */}
-          <div className="p-2.5 rounded-xl bg-[#DBE2EF]/60 dark:bg-slate-800/80 border border-[#DBE2EF] dark:border-slate-700/80 flex items-center justify-between">
+          <NavLink
+            to="/app/plans"
+            onClick={onCloseMobile}
+            className="p-2.5 rounded-xl bg-[#DBE2EF]/60 hover:bg-[#DBE2EF] dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-[#DBE2EF] dark:border-slate-700/80 flex items-center justify-between transition-colors group"
+          >
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded-lg bg-[#3F72AF] text-white">
                 <Sparkles className="w-3.5 h-3.5" />
@@ -197,13 +202,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                 </span>
               </div>
             </div>
-            <button
-              onClick={() => setUpgradeModalOpen(true)}
-              className="text-[10px] font-bold text-[#3F72AF] hover:text-[#112D4E] dark:hover:text-blue-300 uppercase tracking-wider px-2 py-1 rounded bg-white dark:bg-slate-700 border border-[#DBE2EF] dark:border-slate-600 shadow-xs"
-            >
-              Plans
-            </button>
-          </div>
+            <span className="text-[10px] font-bold text-[#3F72AF] group-hover:text-[#112D4E] dark:group-hover:text-blue-300 uppercase tracking-wider px-2 py-1 rounded bg-white dark:bg-slate-700 border border-[#DBE2EF] dark:border-slate-600 shadow-xs">
+              Plans &rarr;
+            </span>
+          </NavLink>
 
           {/* SuperAdmin Console Direct Link */}
           {Boolean(user?.is_superuser) && (

@@ -63,4 +63,62 @@ export class AuthService {
   public async refreshToken(): Promise<boolean> {
     return this.client.refreshToken()
   }
+
+  public async studentLogin(email: string, password: string, tenantId?: string): Promise<LoginResponse> {
+    const headers: Record<string, string> = {}
+    if (tenantId) {
+      headers["X-Tenant-ID"] = tenantId
+    }
+    const res = await this.client.request<LoginResponse>("/auth/student-login/", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ email, password, tenant_id: tenantId }),
+    }, false)
+
+    if (res?.access) {
+      this.client.setTokens(res.access, res.refresh)
+    }
+
+    if (res.active_tenant?.id) {
+      this.client.setActiveTenantId(res.active_tenant.id)
+    }
+    return res
+  }
+
+  public async studentRegister(payload: {
+    tenant_id: string
+    email: string
+    password: string
+    first_name: string
+    last_name: string
+    phone_number?: string
+    admission_number: string
+    grade_or_program?: string
+    gender?: string
+    date_of_birth?: string | null
+    notes?: string
+  }): Promise<any> {
+    return this.client.request("/auth/student-register/", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }, false)
+  }
+
+  public async studentReRequest(payload: {
+    email: string
+    tenant_id?: string
+    notes?: string
+  }): Promise<any> {
+    return this.client.request("/auth/student-rerequest/", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }, false)
+  }
+
+  public async studentCheckStatus(email: string, tenantId?: string): Promise<any> {
+    return this.client.request("/auth/student-status/", {
+      method: "POST",
+      body: JSON.stringify({ email, tenant_id: tenantId }),
+    }, false)
+  }
 }

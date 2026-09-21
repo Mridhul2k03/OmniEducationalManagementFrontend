@@ -4,7 +4,7 @@ import { useAuth } from "../../app/providers/AuthProvider"
 import { api } from "../../services/api"
 import { Input } from "../../components/ui/Input"
 import { Button } from "../../components/ui/Button"
-import { Lock, Mail, ArrowRight, AlertCircle, ShieldCheck } from "lucide-react"
+import { Lock, Mail, ArrowRight, AlertCircle, ShieldCheck, GraduationCap } from "lucide-react"
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
@@ -67,6 +67,29 @@ export const LoginPage: React.FC = () => {
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
           Enter your registered institutional credentials to access your workspace.
         </p>
+      </div>
+
+      {/* Dedicated Student Portal Gateway Banner */}
+      <div className="p-3.5 rounded-xl bg-gradient-to-r from-[#DBE2EF]/60 to-[#F9F7F7] dark:from-slate-800/80 dark:to-slate-900 border border-[#3F72AF]/30 flex items-center justify-between gap-3 text-left">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2 rounded-lg bg-[#112D4E] text-white shrink-0">
+            <GraduationCap className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-[#112D4E] dark:text-white truncate">
+              Are you a Student?
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+              Separate login, account creation & verification
+            </div>
+          </div>
+        </div>
+        <Link
+          to="/student/login"
+          className="px-2.5 py-1.5 rounded-lg bg-[#3F72AF] hover:bg-[#112D4E] text-white text-xs font-semibold whitespace-nowrap transition-colors shadow-xs shrink-0"
+        >
+          Student Portal →
+        </Link>
       </div>
 
       {errorMessage && (

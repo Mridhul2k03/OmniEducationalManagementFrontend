@@ -49,11 +49,12 @@ export class TenantsService {
     return res.data || res
   }
 
-  public async upgradePlan(planId: string): Promise<{ success: boolean; message: string; plan_id: string }> {
+  public async upgradePlan(planId: string): Promise<{ success: boolean; message: string; data?: { plan_id: string } }> {
     const res = await this.client.request<any>("/tenants/upgrade-plan/", {
       method: "POST",
       body: JSON.stringify({ plan_id: planId }),
     })
-    return res.data || res
+    // Return full response so callers can check res.success
+    return res
   }
 }

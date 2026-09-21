@@ -80,15 +80,26 @@ export const StudentDashboardPage: React.FC = () => {
           <div className="space-y-2 max-w-xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#DBE2EF] text-xs font-semibold backdrop-blur-sm border border-white/10">
               <GraduationCap className="w-3.5 h-3.5" />
-              <span>{student?.institution_name || "Academic Campus"}</span>
-              <span>•</span>
-              <span>{placement?.academic_year || "Current Session"}</span>
+              <span>{student?.institution_name || "Academic Portal"}</span>
+              {placement?.academic_year && (
+                <>
+                  <span>•</span>
+                  <span>{placement.academic_year}</span>
+                </>
+              )}
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Welcome back, {student?.first_name || user?.name || "Student"}!
             </h1>
             <p className="text-sm text-[#DBE2EF]/90">
-              You are enrolled in <span className="font-semibold text-white">{placement?.class_cohort || "Grade"}</span> ({placement?.section || "Section A"}), Roll #{placement?.roll_number || "01"}. Your admission number is <span className="font-mono bg-white/15 px-2 py-0.5 rounded text-white">{student?.admission_number || "ADM-001"}</span>.
+              Enrolled Program: <span className="font-semibold text-white">{placement?.class_cohort || "—"}</span>
+              {placement?.section && placement.section !== "—" ? ` (${placement.section})` : ""}
+              {placement?.roll_number && placement.roll_number !== "—" ? `, Roll #${placement.roll_number}` : ""}
+              {student?.admission_number && (
+                <>
+                  . Admission ID: <span className="font-mono bg-white/15 px-2 py-0.5 rounded text-white">{student.admission_number}</span>
+                </>
+              )}
             </p>
           </div>
 
@@ -121,14 +132,16 @@ export const StudentDashboardPage: React.FC = () => {
             </span>
             <div className="mt-1 flex items-baseline gap-2">
               <span className="text-2xl font-bold text-[#112D4E] dark:text-white">
-                {metrics?.attendance_pct ?? 96.5}%
+                {metrics?.attendance_pct ?? 0}%
               </span>
-              <span className="text-xs text-emerald-600 font-medium">Good Standing</span>
+              <span className="text-xs text-emerald-600 font-medium">
+                {(metrics?.attendance_pct ?? 0) >= 75 ? "Good Standing" : "Needs Review"}
+              </span>
             </div>
             <div className="w-32 bg-[#DBE2EF] dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
               <div 
                 className="bg-emerald-500 h-full rounded-full" 
-                style={{ width: `${Math.min(100, metrics?.attendance_pct ?? 96.5)}%` }}
+                style={{ width: `${Math.min(100, metrics?.attendance_pct ?? 0)}%` }}
               />
             </div>
           </div>
@@ -145,12 +158,12 @@ export const StudentDashboardPage: React.FC = () => {
             </span>
             <div className="mt-1 flex items-baseline gap-2">
               <span className="text-2xl font-bold text-[#3F72AF]">
-                {metrics?.gpa ? Number(metrics.gpa).toFixed(2) : "3.85"}
+                {metrics?.gpa ? Number(metrics.gpa).toFixed(2) : "0.00"}
               </span>
               <span className="text-xs text-slate-500">/ 4.00</span>
             </div>
             <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
-              Avg: {metrics?.avg_percentage ?? 88}%
+              Avg: {metrics?.avg_percentage ?? 0}%
             </span>
           </div>
           <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#3F72AF]">
@@ -190,12 +203,12 @@ export const StudentDashboardPage: React.FC = () => {
             </span>
             <div className="mt-1 flex items-baseline gap-2">
               <span className="text-2xl font-bold text-[#112D4E] dark:text-white">
-                {timetable.length || 5}
+                {timetable.length}
               </span>
               <span className="text-xs text-slate-500">Lectures</span>
             </div>
             <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
-              08:30 AM – 02:05 PM
+              {timetable.length > 0 ? "Daily Schedule Active" : "No classes today"}
             </span>
           </div>
           <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600">

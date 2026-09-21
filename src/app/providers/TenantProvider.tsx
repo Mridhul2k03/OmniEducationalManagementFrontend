@@ -27,10 +27,47 @@ interface TenantContextType {
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined)
 
+const DEFAULT_EMPTY_TENANT: Tenant = {
+  id: "",
+  slug: "",
+  name: "Omni Educational Management",
+  code: "OMNI",
+  type: "university_college",
+  tagline: "Academic Portal",
+  primaryColor: "#3F72AF",
+  currency: "USD",
+  timezone: "UTC",
+  address: "",
+  subscriptionPlan: "Enterprise",
+  subscriptionStatus: "active",
+  subscriptionExpiry: "",
+  maxLearners: 1000,
+  currentLearners: 0,
+  terminology: {
+    learnerSingular: "Student",
+    learnerPlural: "Students",
+    educatorSingular: "Professor",
+    educatorPlural: "Faculty",
+    classSingular: "Course",
+    classPlural: "Courses",
+    programSingular: "Program",
+    programPlural: "Programs",
+    termSingular: "Semester",
+    termPlural: "Semesters",
+  },
+  features: {
+    onlineExams: true,
+    financeModule: true,
+    timetableGenerator: true,
+    bulkSms: true,
+    parentPortal: true,
+  },
+}
+
 export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tenants, setTenants] = useState<Tenant[]>(() => appStorage.getTenants())
   const [activeTenantId, setActiveTenantId] = useState<string>(() => {
-    return localStorage.getItem("omni-active-tenant-id") || localStorage.getItem("omni-active-tenant") || "7d18388a-872b-4d2b-b42a-f658c03e9e60"
+    return localStorage.getItem("omni-active-tenant-id") || localStorage.getItem("omni-active-tenant") || ""
   })
 
   // Sync with appStorage subscription
@@ -47,9 +84,15 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         appStorage.updateTenantsFromBackend(backendTenants)
         const updated = appStorage.getTenants()
         setTenants([...updated])
+        if (!activeTenantId || !updated.some(t => t.id === activeTenantId || t.slug === activeTenantId)) {
+          setActiveTenantId(updated[0].id)
+          localStorage.setItem("omni-active-tenant", updated[0].id)
+          localStorage.setItem("omni-active-tenant-id", updated[0].id)
+          api.setActiveTenantId(updated[0].id)
+        }
       }
     } catch {
-      // Backend not reachable, keep using offline tenants
+      // Backend not reachable
     }
   }
 
@@ -58,19 +101,34 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     fetchBackendTenants()
   }, [])
 
-  const tenant = tenants.find(t => 
-    t.id === activeTenantId || 
-    t.slug === activeTenantId || 
-    (t.code && t.code.toLowerCase() === activeTenantId.toLowerCase())
-  ) || tenants[0]
+  const rawTenant = tenants.find(t => 
+    (activeTenantId && (t.id === activeTenantId || t.slug === activeTenantId || (t.code && t.code.toLowerCase() === activeTenantId.toLowerCase())))
+  ) || tenants[0] || DEFAULT_EMPTY_TENANT
+
+  const tenant: Tenant = {
+    ...DEFAULT_EMPTY_TENANT,
+    ...(rawTenant || {}),
+    terminology: {
+      ...DEFAULT_EMPTY_TENANT.terminology,
+      ...(rawTenant?.terminology || {}),
+    },
+    features: {
+      ...DEFAULT_EMPTY_TENANT.features,
+      ...(rawTenant?.features || {}),
+    }
+  }
 
   useEffect(() => {
-    if (tenant) {
+    if (tenant && tenant.name) {
       document.title = `${tenant.name} | OMNI Edu Platform`
-      document.documentElement.style.setProperty("--tenant-primary", tenant.primaryColor)
-      localStorage.setItem("omni-active-tenant", tenant.id)
-      localStorage.setItem("omni-active-tenant-id", tenant.id)
-      api.setActiveTenantId(tenant.id)
+      if (tenant.primaryColor) {
+        document.documentElement.style.setProperty("--tenant-primary", tenant.primaryColor)
+      }
+      if (tenant.id) {
+        localStorage.setItem("omni-active-tenant", tenant.id)
+        localStorage.setItem("omni-active-tenant-id", tenant.id)
+        api.setActiveTenantId(tenant.id)
+      }
     }
   }, [tenant])
 
@@ -92,24 +150,24 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }
 
   const t = (key: TermKey): string => {
-    const term: TerminologyConfig = tenant.terminology
+    const term = tenant.terminology || DEFAULT_EMPTY_TENANT.terminology
     switch (key) {
-      case "learner": return term.learnerSingular
-      case "learners": return term.learnerPlural
-      case "educator": return term.educatorSingular
-      case "educators": return term.educatorPlural
-      case "class": return term.classSingular
-      case "classes": return term.classPlural
-      case "program": return term.programSingular
-      case "programs": return term.programPlural
-      case "term": return term.termSingular
-      case "terms": return term.termPlural
+      case "learner": return term.learnerSingular || "Student"
+      case "learners": return term.learnerPlural || "Students"
+      case "educator": return term.educatorSingular || "Faculty"
+      case "educators": return term.educatorPlural || "Faculty"
+      case "class": return term.classSingular || "Class"
+      case "classes": return term.classPlural || "Classes"
+      case "program": return term.programSingular || "Program"
+      case "programs": return term.programPlural || "Programs"
+      case "term": return term.termSingular || "Term"
+      case "terms": return term.termPlural || "Terms"
       default: return key
     }
   }
 
   const isFeatureEnabled = (feature: keyof Tenant["features"]): boolean => {
-    return !!tenant.features[feature]
+    return !!tenant.features?.[feature]
   }
 
   return (

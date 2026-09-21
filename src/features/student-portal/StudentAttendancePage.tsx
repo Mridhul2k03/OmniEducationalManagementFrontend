@@ -25,7 +25,7 @@ export const StudentAttendancePage: React.FC = () => {
   const presentCount = records.filter((r) => r.status === "present" || r.status === "late").length
   const absentCount = records.filter((r) => r.status === "absent").length
   const lateCount = records.filter((r) => r.status === "late").length
-  const attendanceRate = total > 0 ? Math.round((presentCount / total) * 100) : 100
+  const attendanceRate = total > 0 ? Math.round((presentCount / total) * 100) : 0
 
   return (
     <div className="space-y-6 animate-fade-in">

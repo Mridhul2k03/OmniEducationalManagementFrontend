@@ -48,11 +48,11 @@ function mapBackendMark(m: any): MarkRecord {
     examId: m.exam_id || m.exam_subject || "",
     studentId: m.student?.id || m.student || "",
     studentName: m.student_name || m.student?.full_name || "Enrolled Student",
-    admissionNumber: m.admission_number || m.student?.admission_number || "ADM",
+    admissionNumber: m.admission_number || m.student?.admission_number || "",
     marksObtained: Number(m.marks_obtained || 0),
     maxMarks: Number(m.max_marks || 100),
-    grade: m.grade || "A",
-    gpa: Number(m.grade_point || 4.0),
+    grade: m.grade || "—",
+    gpa: Number(m.grade_point || 0.0),
     status: m.status === "entered" ? "submitted" : m.status || "submitted",
     feedback: m.feedback || "",
   }
@@ -127,26 +127,7 @@ export const ExaminationsPage: React.FC = () => {
       if (Array.isArray(res) && res.length > 0) {
         setMarks(res.map(mapBackendMark))
       } else {
-        // Build draft marks from enrolled students
-        const studentsList = await api.students.list()
-        if (Array.isArray(studentsList) && studentsList.length > 0) {
-          const drafts: MarkRecord[] = studentsList.map((s: any, idx: number) => ({
-            id: `draft-mk-${s.id}-${examId}`,
-            examId,
-            studentId: s.id,
-            studentName: s.full_name || `${s.first_name} ${s.last_name}`,
-            admissionNumber: s.admission_number,
-            marksObtained: 85 - (idx % 5) * 3,
-            maxMarks: 100,
-            grade: "A",
-            gpa: 3.8,
-            status: "submitted",
-            feedback: "Consistent understanding and analytical demonstration.",
-          }))
-          setMarks(drafts)
-        } else {
-          setMarks([])
-        }
+        setMarks([])
       }
     } catch {
       setMarks([])
